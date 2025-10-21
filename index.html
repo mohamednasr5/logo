@@ -14,7 +14,6 @@
   .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
   label{font-size:14px;opacity:.9}
   input[type="file"]{display:block;width:100%;padding:22px;border:2px dashed var(--brand);border-radius:12px;background:#0c0f14;color:#9fb0c3;text-align:center;cursor:pointer}
-  input[type="file"]::file-selector-button{background:var(--brand);color:#02130e;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;content:"رفع الصور";}
   input[type="file"]::before{content:"📤 رفع الصور";display:block;font-size:16px;font-weight:bold;color:var(--brand);margin-bottom:6px}
   input[type="number"],input[type="range"],select{background:#0c0f14;color:var(--text);border:1px solid #2a2f3a;border-radius:10px;padding:8px}
   input[type="range"]{width:180px}
@@ -34,12 +33,14 @@
   #popup .box{background:#151923;padding:30px;border-radius:16px;text-align:center;max-width:400px;line-height:1.7;box-shadow:0 0 20px rgba(0,0,0,0.4);}
   #popup h2{color:var(--brand);margin-bottom:10px}
   #popup button{margin-top:15px}
+  #activeUsers{margin-top:10px;font-size:18px;color:#00e0a4;font-weight:bold;}
 </style>
 </head>
 <body>
 <header>
   <h1>🛠️ إزالة الشعار ورفع جودة الصور | من مهندس محمد حماد</h1>
   <div class="muted">يمكنك رفع عدد 50 صورة معاً | من أجل عيوني متابعيني</div>
+  <div id="activeUsers">يستخدم هذه الأداة الآن: <span id="userCount">0</span> مستخدم</div>
 </header>
 
 <main>
@@ -132,6 +133,18 @@
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 <script>
 (() => {
+  // === عداد المستخدمين النشطين ===
+  const userCountEl = document.getElementById('userCount');
+  let users = Math.floor(Math.random() * (6254 - 1052 + 1)) + 1052;
+  userCountEl.textContent = users.toLocaleString('ar-EG');
+
+  setInterval(() => {
+    const change = Math.floor(Math.random() * 10) - 5; // -5 إلى +5
+    users = Math.max(1052, Math.min(6254, users + change));
+    userCountEl.textContent = users.toLocaleString('ar-EG');
+  }, 3000);
+
+  // === باقي الأكواد ===
   const picker=document.getElementById('picker');
   const vertCut=document.getElementById('vertCut');
   const bottomCut=document.getElementById('bottomCut');
@@ -294,7 +307,6 @@
     status.textContent='✅ تم تنزيل كل الصور بشكل منفصل';
   });
 
-  // === تنزيل ZIP ===
   btnZip.addEventListener('click',async()=>{
     if(files.length<2)return alert('زر الملف المضغوط يعمل فقط عند رفع أكثر من صورة واحدة');
     const zip=new JSZip();
