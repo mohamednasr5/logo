@@ -1,513 +1,812 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>🛠️ إزالة الشعار ورفع جودة الصور | من مهندس محمد حماد</title>
-
-<!-- ZIP & Save -->
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-
-<style>
-  :root { --brand:#00e0a4; --bg:#0f1115; --panel:#151923; --text:#e9eef3; }
-  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
-  header{padding:20px;text-align:center;border-bottom:1px solid #222}
-  h1{margin:0 0 8px 0;color:var(--brand);font-weight:700}
-  main{max-width:1100px;margin:24px auto;padding:0 16px}
-  .card{background:var(--panel);border:1px solid #222;border-radius:14px;padding:16px;margin-bottom:16px}
-  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-  label{font-size:14px;opacity:.9}
-  input[type="file"]{display:block;width:100%;padding:22px;border:2px dashed var(--brand);border-radius:12px;background:#0c0f14;color:#9fb0c3;text-align:center;cursor:pointer}
-  input[type="file"]::before{content:"📤 رفع الصور";display:block;font-size:16px;font-weight:bold;color:var(--brand);margin-bottom:6px}
-  input[type="number"],input[type="range"],select{background:#0c0f14;color:var(--text);border:1px solid #2a2f3a;border-radius:10px;padding:8px}
-  input[type="range"]{width:180px}
-  .btn{background:var(--brand);color:#02130e;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
-  .btn[disabled]{opacity:.5;cursor:not-allowed}
-  .muted{opacity:.8;font-size:13px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-  .thumb{background:#0c0f14;border:1px solid #2a2f3a;border-radius:12px;overflow:hidden;padding-bottom:10px;position:relative}
-  .thumb canvas{width:100%;display:block}
-  .fade-in{opacity:0;transition:opacity .5s ease}
-  .controls{padding:10px;background:#11171e;border-top:1px solid #2a2f3a;text-align:center}
-  .controls label{font-size:12px;display:block;margin-bottom:4px}
-
-  /* شريط التقدم */
-  progress{width:100%;height:14px;border-radius:10px;overflow:hidden;appearance:none;background:#222}
-  progress::-webkit-progress-bar{background-color:#222;border-radius:10px}
-  progress::-webkit-progress-value{
-    background:linear-gradient(270deg,var(--brand),#00b8ff,var(--brand));
-    background-size:200% 100%;border-radius:10px;animation:moveBar 2s linear infinite}
-  progress::-moz-progress-bar{
-    background:linear-gradient(270deg,var(--brand),#00b8ff,var(--brand));
-    background-size:200% 100%;border-radius:10px;animation:moveBar 2s linear infinite}
-  @keyframes moveBar{0%{background-position:0% 0}100%{background-position:-200% 0}}
-
-  /* رسالة الحالة أسفل الشريط */
-  #aiStatus{text-align:center;margin-top:10px;font-size:15px;color:#00b8ff;font-weight:bold;min-height:1.4em}
-  #aiStatus .spin{display:inline-block;animation:spin 1.2s linear infinite}
-  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-
-  footer{opacity:.85;text-align:center;padding:24px 0;font-size:15px;color:#b4c7d4}
-  footer a{color:var(--brand);text-decoration:none;font-weight:bold}
-
-  /* نافذة القسم */
-  #popup{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:9999;visibility:hidden;opacity:0;transition:.3s}
-  #popup.active{visibility:visible;opacity:1}
-  #popup .box{background:#151923;padding:30px;border-radius:16px;text-align:center;max-width:420px;line-height:1.7;box-shadow:0 0 20px rgba(0,0,0,.4)}
-  #popup h2{color:var(--brand);margin-bottom:10px}
-  #popup button{margin-top:15px}
-  #activeUsers{margin-top:10px;font-size:18px;color:#00e0a4;font-weight:bold}
-
-  /* زر الصوت */
-  #soundToggle{position:fixed;bottom:20px;left:20px;background:var(--brand);color:#02130e;border:none;border-radius:50%;width:48px;height:48px;font-size:22px;font-weight:bold;cursor:pointer;box-shadow:0 0 12px rgba(0,0,0,.5);z-index:999;transition:transform .2s ease}
-  #soundToggle:hover{transform:scale(1.1)}
-
-  /* سطر الخصوصية */
-  #privacyNote{margin-top:8px;color:#00e0a4;font-weight:700}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>🛠️ إزالة الشعار المتقدمة بالذكاء الاصطناعي | مهندس محمد حماد</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+  <style>
+    :root {
+      --brand: #00e0a4;
+      --bg: #0f1115;
+      --panel: #151923;
+      --text: #e9eef3;
+      --border: #2a2f3a;
+      --error: #ff4757;
+      --success: #00e676;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      background: var(--bg); 
+      color: var(--text); 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+    }
+    header { 
+      padding: 20px; 
+      text-align: center; 
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #0f1115 0%, #1a1f2e 100%);
+    }
+    h1 { 
+      margin: 0 0 8px; 
+      color: var(--brand); 
+      font-weight: 700; 
+      font-size: clamp(18px, 4vw, 24px);
+    }
+    .subtitle {
+      color: #9fb0c3;
+      font-size: clamp(12px, 2.5vw, 14px);
+      margin: 8px 0;
+    }
+    main { 
+      max-width: 1200px; 
+      margin: 24px auto; 
+      padding: 0 16px; 
+    }
+    .card { 
+      background: var(--panel); 
+      border: 1px solid var(--border); 
+      border-radius: 16px; 
+      padding: 20px; 
+      margin-bottom: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      color: var(--brand);
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+    
+    /* Drop Zone */
+    #dropZone {
+      border: 3px dashed var(--brand);
+      border-radius: 16px;
+      padding: 60px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, #0c0f14 0%, #151923 100%);
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    #dropZone::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(0, 224, 164, 0.1) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    #dropZone:hover::after {
+      opacity: 1;
+    }
+    #dropZone.dragover {
+      background: rgba(0, 224, 164, 0.15);
+      border-color: var(--success);
+      border-style: solid;
+      transform: scale(1.02);
+      box-shadow: 0 0 30px rgba(0, 224, 164, 0.3);
+    }
+    #dropZone.dragover::after {
+      opacity: 1;
+    }
+    .drop-icon {
+      font-size: 64px;
+      display: block;
+      margin-bottom: 16px;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    #dropZone.dragover .drop-icon {
+      animation: bounce 0.5s ease infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .drop-text {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--brand);
+      margin-bottom: 12px;
+    }
+    .drop-hint {
+      font-size: 14px;
+      color: #7a8a9a;
+      margin-bottom: 8px;
+    }
+    .drop-limit {
+      font-size: 12px;
+      color: #5a6a7a;
+      margin-top: 8px;
+    }
+    .file-count {
+      display: inline-block;
+      background: var(--brand);
+      color: #02130e;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+    #picker { display: none; }
+    
+    /* Controls */
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .control-item label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #b4c7d4;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      background: #0c0f14;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+    select:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+    
+    .range-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      background: #0c0f14;
+      border-radius: 10px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--brand);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: var(--brand);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+    .range-value {
+      min-width: 50px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--brand);
+    }
+    
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      background: var(--brand);
+      color: #02130e;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.5s, height 0.5s;
+    }
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 224, 164, 0.4);
+    }
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #2a2f3a;
+      color: var(--text);
+    }
+    .btn-danger {
+      background: var(--error);
+      color: white;
+    }
+    
+    /* Progress */
+    .progress-container {
+      margin: 16px 0;
+    }
+    progress {
+      width: 100%;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      appearance: none;
+      background: #0c0f14;
+      border: 1px solid var(--border);
+    }
+    progress::-webkit-progress-bar {
+      background: #0c0f14;
+      border-radius: 10px;
+    }
+    progress::-webkit-progress-value {
+      background: linear-gradient(90deg, var(--brand), #00b8ff, var(--brand));
+      background-size: 200% 100%;
+      border-radius: 10px;
+      animation: progressAnim 2s linear infinite;
+    }
+    progress::-moz-progress-bar {
+      background: linear-gradient(90deg, var(--brand), #00b8ff, var(--brand));
+      background-size: 200% 100%;
+      border-radius: 10px;
+      animation: progressAnim 2s linear infinite;
+    }
+    @keyframes progressAnim {
+      0% { background-position: 0% 0; }
+      100% { background-position: 200% 0; }
+    }
+    
+    .status-text {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #7a8a9a;
+    }
+    .status-text .spin {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* AI Status */
+    #aiStatus {
+      text-align: center;
+      margin: 16px 0;
+      padding: 12px;
+      background: rgba(0, 224, 164, 0.1);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--brand);
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Gallery */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .gallery.empty::after {
+      content: '📷 لا توجد صور للعرض - قم برفع الصور أولاً';
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: #5a6a7a;
+      font-size: 16px;
+    }
+    .thumb-card {
+      background: #0c0f14;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .thumb-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 224, 164, 0.2);
+    }
+    .thumb-header {
+      padding: 10px;
+      background: #151923;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: #9fb0c3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .thumb-size {
+      font-size: 11px;
+      color: #7a8a9a;
+    }
+    .thumb-canvas-container {
+      position: relative;
+      width: 100%;
+      padding-top: 75%;
+      background: #000;
+    }
+    .thumb-canvas-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .comparison-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 224, 164, 0.9);
+      color: #02130e;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 10;
+      transition: transform 0.2s ease;
+    }
+    .comparison-toggle:hover {
+      transform: scale(1.05);
+    }
+    .thumb-controls {
+      padding: 12px;
+      background: #0d1118;
+    }
+    .thumb-controls .control-row {
+      margin-bottom: 10px;
+    }
+    .thumb-controls label {
+      font-size: 11px;
+      color: #7a8a9a;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .thumb-controls input[type="range"] {
+      width: 100%;
+      height: 4px;
+    }
+    .thumb-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .thumb-actions .btn {
+      min-width: auto;
+      padding: 8px 12px;
+      font-size: 12px;
+      flex: 1;
+    }
+    
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .stat-card {
+      background: #0c0f14;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--brand);
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #7a8a9a;
+    }
+    
+    /* Toast Notifications */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      z-index: 10000;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      max-width: 300px;
+    }
+    .toast.show {
+      transform: translateX(0);
+    }
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error { border-left: 4px solid var(--error); }
+    .toast.warning { border-left: 4px solid #ffa502; }
+    
+    /* User Counter */
+    #activeUsers {
+      margin-top: 12px;
+      font-size: 16px;
+      color: var(--brand);
+      font-weight: 700;
+    }
+    
+    /* Privacy Note */
+    .privacy-note {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(0, 224, 164, 0.1);
+      border-radius: 10px;
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: #7a8a9a;
+      font-size: 14px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    footer a {
+      color: var(--brand);
+      text-decoration: none;
+      font-weight: 700;
+      transition: color 0.3s ease;
+    }
+    footer a:hover {
+      color: #00b8ff;
+    }
+    
+    /* Theme Toggle */
+    #themeToggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: var(--brand);
+      color: #02130e;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+    #themeToggle:hover {
+      transform: scale(1.1) rotate(20deg);
+    }
+    
+    /* Sound Toggle */
+    #soundToggle {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: var(--brand);
+      color: #02130e;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+    #soundToggle:hover {
+      transform: scale(1.1);
+    }
+    
+    /* Light Theme */
+    body.light-theme {
+      --bg: #f5f5f5;
+      --panel: #ffffff;
+      --text: #1a1a1a;
+      --border: #e0e0e0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+      .btn-group {
+        flex-direction: column;
+      }
+      .btn {
+        min-width: 100%;
+      }
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+      #themeToggle, #soundToggle {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+      }
+      .drop-icon {
+        font-size: 48px;
+      }
+      #dropZone {
+        padding: 40px 15px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      main {
+        padding: 0 8px;
+      }
+      .card {
+        padding: 12px;
+        border-radius: 12px;
+      }
+      h1 {
+        font-size: 16px;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
 </head>
 <body>
-<header>
-  <h1>🛠️ إزالة الشعار ورفع جودة الصور | من مهندس محمد حماد</h1>
-  <div class="muted">يمكنك رفع عدد 50 صورة معاً | من أجل عيوني متابعيني ❤️</div>
-  <div id="activeUsers">يستخدم هذه الأداة الآن: <span id="userCount">0</span> مستخدم</div>
-</header>
+  <button id="themeToggle" title="تبديل الوضع">🌙</button>
+  <button id="soundToggle" title="تشغيل/إيقاف الصوت">🔊</button>
+  
+  <header>
+    <h1>🛠️ إزالة الشعار المتقدمة بالذكاء الاصطناعي</h1>
+    <div class="subtitle">معالجة احترافية باستخدام TensorFlow.js | من مهندس محمد حماد</div>
+    <div id="activeUsers">المستخدمون النشطون: <span id="userCount">...</span></div>
+  </header>
 
-<main>
-  <div class="card">
-    <input id="picker" type="file" accept="image/*" multiple title="رفع الصور" />
-    <div id="privacyNote">🔒 لا يتم الاحتفاظ بالصور — جميع الصور تُعالج محليًا وتُحذف بعد الانتهاء.</div>
-    <div class="row" style="margin-top:12px">
-      <div>
-        <label>اتجاه القص العمودي:</label><br>
-        <select id="vertSide">
-          <option value="right">يمين</option>
-          <option value="left">يسار</option>
-        </select>
-      </div>
-      <div>
-        <label>عرض القص العمودي: <span id="vertVal">2</span>%</label><br>
-        <div class="row">
-          <input id="vertCut" type="range" min="0" max="15" step="0.5" value="2">
-          <input id="vertNum" type="number" min="0" max="15" step="0.5" value="2" style="width:70px">
+  <main>
+    <!-- Upload Section -->
+    <div class="card">
+      <div id="dropZone">
+        <span class="drop-icon">📤</span>
+        <div class="drop-text">اسحب وأفلت الصور هنا</div>
+        <div class="drop-hint">أو اضغط للاختيار من جهازك</div>
+        <div class="drop-limit">يدعم: JPEG, PNG, WebP | حتى 50 صورة | أقصى حجم لكل صورة: 10MB</div>
+        <div class="file-count" id="fileCount" style="display: none;">
+          <span id="fileCountNum">0</span> صورة محملة
         </div>
       </div>
-      <div>
-        <label>قص سفلي: <span id="bottomVal">0</span>%</label><br>
-        <div class="row">
-          <input id="bottomCut" type="range" min="0" max="20" step="0.5" value="0">
-          <input id="bottomNum" type="number" min="0" max="20" step="0.5" value="0" style="width:70px">
+      <input id="picker" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+      <div class="privacy-note">
+        🔒 خصوصية كاملة - جميع الصور تُعالج محليًا على جهازك ولا تُرسل لأي خادم
+      </div>
+    </div>
+
+    <!-- AI Detection Methods -->
+    <div class="card">
+      <h3>⚙️ طرق إزالة العلامات المائية بالذكاء الاصطناعي</h3>
+      <div class="control-grid">
+        <div class="control-item">
+          <label>🤖 نموذج الإزالة:</label>
+          <select id="removalMethod">
+            <option value="inpaint">Inpainting AI - ملء ذكي للمناطق المحذوفة</option>
+            <option value="denoise">Denoising - إزالة التشويش والضوضاء</option>
+            <option value="segmentation">Segmentation - كشف وإزالة تلقائية</option>
+            <option value="content-aware">Content-Aware Fill - ملء حسب المحتوى</option>
+            <option value="manual" selected>Manual Crop - القص اليدوي (أسرع)</option>
+          </select>
+        </div>
+        
+        <div class="control-item">
+          <label>✨ وضع التحسين:</label>
+          <select id="enhanceMode">
+            <option value="ai-upscale" selected>AI Upscaling - رفع الجودة 2x</option>
+            <option value="denoise">Noise Reduction - تقليل التشويش</option>
+            <option value="sharpen">Sharpening - زيادة الوضوح</option>
+            <option value="none">بدون تحسين (معاينة سريعة)</option>
+          </select>
+        </div>
+        
+        <div class="control-item">
+          <label>🎨 جودة الإخراج:</label>
+          <select id="outputQuality">
+            <option value="1.0">أقصى جودة (100%)</option>
+            <option value="0.95" selected>جودة عالية جداً (95%)</option>
+            <option value="0.85">جودة عالية (85%)</option>
+            <option value="0.75">جودة متوسطة - حجم أصغر (75%)</option>
+          </select>
+        </div>
+
+        <div class="control-item">
+          <label>📁 صيغة الإخراج:</label>
+          <select id="outputFormat">
+            <option value="jpeg" selected>JPEG (حجم أصغر)</option>
+            <option value="png">PNG (جودة أعلى)</option>
+            <option value="webp">WebP (توازن مثالي)</option>
+          </select>
         </div>
       </div>
-      <div>
-        <label>وضع التحسين:</label><br>
-        <select id="target">
-          <option value="same" selected>تحسين الذكاء الصناعي دون تغيير الأبعاد</option>
-          <option value="none">بدون ترقية (معاينة سريعة)</option>
-        </select>
+    </div>
+
+    <!-- Manual Cropping Controls -->
+    <div class="card">
+      <h3>✂️ التحكم اليدوي بالقص</h3>
+      <div class="control-grid">
+        <div class="control-item">
+          <label>اتجاه القص العمودي:</label>
+          <select id="vertSide">
+            <option value="right">يمين ←</option>
+            <option value="left">يسار →</option>
+          </select>
+        </div>
+        
+        <div class="control-item">
+          <label>عرض القص العمودي:</label>
+          <div class="range-control">
+            <input id="vertCut" type="range" min="0" max="30" step="0.5" value="2">
+            <span class="range-value"><span id="vertVal">2</span>%</span>
+          </div>
+        </div>
+        
+        <div class="control-item">
+          <label>قص علوي:</label>
+          <div class="range-control">
+            <input id="topCut" type="range" min="0" max="30" step="0.5" value="0">
+            <span class="range-value"><span id="topVal">0</span>%</span>
+          </div>
+        </div>
+        
+        <div class="control-item">
+          <label>قص سفلي:</label>
+          <div class="range-control">
+            <input id="bottomCut" type="range" min="0" max="30" step="0.5" value="0">
+            <span class="range-value"><span id="bottomVal">0</span>%</span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="card row">
-    <button class="btn" id="btnProcess">🔄 تنفيذ على الكل (إعادة التحسين)</button>
-    <button class="btn" id="btnDownload">⬇️ تنزيل الكل (صور منفصلة)</button>
-    <button class="btn" id="btnZip">📦 تنزيل ملف مضغوط (ZIP)</button>
-    <div class="muted">أي تغيير في المؤشرات يحدّث المعاينة فورًا، ويُعاد التحسين تلقائيًا بعد التوقف.</div>
-  </div>
-
-  <div class="card">
-    <div class="row" style="align-items:center;gap:8px">
-      <strong>التقدّم:</strong>
-      <progress id="bar" max="100" value="0"></progress>
-      <span id="status" class="muted">جاهز</span>
+    <!-- Action Buttons -->
+    <div class="card">
+      <div class="btn-group">
+        <button class="btn" id="btnProcess">🔄 معالجة الكل</button>
+        <button class="btn btn-secondary" id="btnDownload">⬇️ تنزيل الكل</button>
+        <button class="btn btn-secondary" id="btnUndo">↩️ تراجع</button>
+        <button class="btn btn-danger" id="btnClear">🗑️ حذف الكل</button>
+      </div>
     </div>
-    <div id="aiStatus"></div>
-  </div>
 
-  <div class="card">
-    <h3>📸 المعاينات (بعد التحسين)</h3>
-    <div id="preview" class="grid"></div>
-  </div>
-</main>
+    <!-- Progress -->
+    <div class="card">
+      <div class="progress-container">
+        <progress id="progressBar" max="100" value="0"></progress>
+        <div class="status-text">
+          <span id="statusText">جاهز للاستخدام</span>
+          <span id="statusDetails"></span>
+        </div>
+      </div>
+      <div id="aiStatus">🤖 في انتظار تحميل الصور...</div>
+    </div>
 
-<footer>
-  هذه الأداة من برمجة وملك <strong>المهندس محمد حماد</strong> – تابعوه على الفيسبوك:
-  <br>👉 <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">facebook.com/en.mohamed.nasr</a>
-</footer>
+    <!-- Statistics -->
+    <div class="card">
+      <h3>📊 الإحصائيات</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="statImages">0</div>
+          <div class="stat-label">صورة محملة</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statProcessed">0</div>
+          <div class="stat-label">تمت معالجتها</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statTime">0s</div>
+          <div class="stat-label">الوقت المستغرق</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statSize">0 MB</div>
+          <div class="stat-label">الحجم الكلي</div>
+        </div>
+      </div>
+    </div>
 
-<!-- 🔊 الصوت الخلفي -->
-<audio id="bgMusic" src="https://mohamednasr5.github.io/logo/bg.mp3" loop autoplay></audio>
-<button id="soundToggle">🔊</button>
+    <!-- Gallery -->
+    <div class="card">
+      <h3>🖼️ معرض الصور (قبل وبعد)</h3>
+      <div id="gallery" class="gallery empty"></div>
+    </div>
+  </main>
 
-<!-- ⚠️ نافذة القسم -->
-<div id="popup">
-  <div class="box">
-    <h2>⚠️ قسم المستخدم</h2>
-    <p style="font-size:18px;line-height:1.8;text-align:center;color:#fff;">
-      قبل استخدام هذه الأداة، <strong>أُقْسِم بالله العظيم</strong><br>
-      أن أتابع حساب المهندس <strong>محمد حماد</strong> على فيسبوك
-      (<a href="https://www.facebook.com/en.mohamed.nasr" target="_blank" style="color:#00e0a4;">تابع من هنا</a>)<br>
-      وأشهد الله أني إن استخدمت الأداة دون متابعة، أو ألغيت المتابعة لاحقًا،
-      فإني أكون قد أخلفت وعدي وخنت أمانتي وظلمت نفسي.
+  <footer>
+    <p>برمجة وتصميم <strong>المهندس محمد حماد</strong></p>
+    <p>تابعني على: 👉 <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">facebook.com/en.mohamed.nasr</a></p>
+    <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">
+      النسخة 2.0 - مدعومة بـ TensorFlow.js | جميع الحقوق محفوظة © 2025
     </p>
-    <p>✳️ رابط المتابعة: <br>
-      <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank" style="color:#00e0a4;font-weight:bold">متابعة المهندس محمد حماد الآن</a>
-    </p>
-    <label><input type="checkbox" id="agreeBox"> ✔ أقر وأقسم بذلك</label><br>
-    <button class="btn" id="agreeBtn" disabled>أقسم وأقر بذلك ✅</button>
-  </div>
-</div>
+  </footer>
 
-<script>
-(() => {
-  // ===== واجهة عامة =====
-  const userCountEl = document.getElementById('userCount');
-  let users = Math.floor(Math.random()*(6254-1052+1))+1052;
-  userCountEl.textContent = users.toLocaleString('ar-EG');
-  setInterval(()=>{ const change=Math.floor(Math.random()*10)-5; users=Math.max(1052,Math.min(6254,users+change)); userCountEl.textContent=users.toLocaleString('ar-EG'); },3000);
+  <audio id="bgMusic" loop>
+    <source src="https://mohamednasr5.github.io/logo/bg.mp3" type="audio/mpeg">
+  </audio>
 
-  const bgMusic=document.getElementById('bgMusic');
-  const soundBtn=document.getElementById('soundToggle');
-  let isMuted=false; bgMusic.volume=0.3;
-  document.addEventListener('click',()=>{ if(bgMusic.paused && !isMuted) bgMusic.play().catch(()=>{}); },{once:true});
-  soundBtn.addEventListener('click',()=>{ if(isMuted){bgMusic.muted=false;bgMusic.play();soundBtn.textContent="🔊";}else{bgMusic.muted=true;soundBtn.textContent="🔇";} isMuted=!isMuted;});
+  <script>
+    (async () => {
+      'use strict';
 
-  // ===== عناصر التحكم =====
-  const picker = document.getElementById('picker');
-  const vertCut = document.getElementById('vertCut'), bottomCut = document.getElementById('bottomCut');
-  const vertNum = document.getElementById('vertNum'), bottomNum = document.getElementById('bottomNum');
-  const vertVal = document.getElementById('vertVal'), bottomVal = document.getElementById('bottomVal');
-  const vertSide = document.getElementById('vertSide'), targetSel = document.getElementById('target');
-  const previewEl = document.getElementById('preview'), bar = document.getElementById('bar');
-  const status = document.getElementById('status'), aiStatus = document.getElementById('aiStatus');
-  const btnProcess = document.getElementById('btnProcess'), btnDownload = document.getElementById('btnDownload'), btnZip = document.getElementById('btnZip');
-
-  let files = [];
-  // حالة لكل صورة
-  const items = []; // { file, img, enhanced, wrap, cv, vcut, bcut, processing:false, aiTimer:null }
-
-  // ===== تحميل السكربتات بنظام fallback =====
-  function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
-  async function ensureUpscalerRuntime(){
-    if (window.Upscaler) return;
-    await loadScript('https://cdn.jsdelivr.net/npm/upscaler/dist/browser/umd/upscaler.min.js');
-  }
-  async function ensureModelX4Plus(){
-    if (window.esrganx4plus) return true;
-    try{
-      await loadScript('https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-x4plus/dist/umd/index.min.js'); // latest
-      if (window.esrganx4plus) return true;
-      throw new Error('latest did not expose model');
-    }catch(e){
-      console.warn('Model latest failed, trying 1.0.0', e);
-      try{
-        await loadScript('https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-x4plus@1.0.0/dist/umd/index.min.js');
-        return !!window.esrganx4plus;
-      }catch(e2){
-        console.warn('Model 1.0.0 failed', e2);
-        return false;
-      }
-    }
-  }
-
-  let upscaler = null; let aiReady = false;
-  async function ensureAI(){
-    if (upscaler) return true;
-    aiStatus.innerHTML = '<span class="spin">🔄</span> تهيئة نموذج الذكاء الصناعي (x4plus)...';
-    try{
-      await ensureUpscalerRuntime();
-      const ok = await ensureModelX4Plus();
-      if (!ok){ aiStatus.textContent = '⚠️ تعذر تحميل نموذج الذكاء الصناعي — سيتم استخدام تحسين احتياطي.'; return false; }
-      upscaler = new window.Upscaler({ model: window.esrganx4plus });
-      aiReady = true;
-      aiStatus.textContent = '✅ تم تهيئة الذكاء الصناعي';
-      return true;
-    }catch(err){
-      console.error(err);
-      aiStatus.textContent = '⚠️ تعذر تهيئة الذكاء الصناعي — سيتم استخدام تحسين احتياطي.';
-      return false;
-    }
-  }
-
-  function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
-  function syncRangeNum(range,num,label,onChange){
-    const setBoth=val=>{ val=clamp(val,parseFloat(range.min),parseFloat(range.max)); range.value=num.value=val; label.textContent=val; onChange && onChange(); };
-    range.addEventListener('input',()=>setBoth(parseFloat(range.value)));
-    num.addEventListener('input',()=>setBoth(parseFloat(num.value)));
-  }
-
-  // قص للصورة حسب الإعدادات (بدون تغيير الأبعاد بخلاف القص المطلوب)
-  function cropToCanvas(img, opt){
-    const { verticalPercent, bottomPercent, side } = opt;
-    const vpx = verticalPercent/100, bpx = bottomPercent/100;
-    const sx = side==='left' ? img.width*vpx : 0;
-    const sw = img.width*(1 - vpx);
-    const sh = img.height*(1 - bpx);
-    const c = document.createElement('canvas');
-    c.width = Math.max(1, Math.round(sw));
-    c.height = Math.max(1, Math.round(sh));
-    const ctx = c.getContext('2d');
-    ctx.imageSmoothingQuality='high';
-    ctx.drawImage(img, sx, 0, sw, sh, 0, 0, c.width, c.height);
-    return c;
-  }
-
-  // تحسين بالذكاء الصناعي ثم إرجاع لنفس الأبعاد (بعد القص)
-  async function aiEnhanceKeepSameSize(baseCanvas){
-    const aiOk = await ensureAI();
-    if (aiOk && upscaler && targetSel.value === 'same'){
-      try{
-        const upscaled = await upscaler.upscale(baseCanvas, {
-          output: 'canvas',
-          patchSize: 128,
-          padding: 8,
-          progress: (p)=>{ status.textContent = `🔧 معالجة الذكاء الصناعي: ${(p*100|0)}%`; }
-        });
-        const out = document.createElement('canvas');
-        out.width = baseCanvas.width; out.height = baseCanvas.height;
-        out.getContext('2d').drawImage(upscaled, 0, 0, out.width, out.height);
-        return out;
-      }catch(err){ console.warn('AI enhance failed, fallback', err); }
-    }
-    // fallback: bicubic upscale-downscale خفيف مع الحفاظ على نفس الأبعاد
-    const tmp = document.createElement('canvas');
-    tmp.width = baseCanvas.width*2; tmp.height = baseCanvas.height*2;
-    tmp.getContext('2d').drawImage(baseCanvas, 0, 0, tmp.width, tmp.height);
-    const out = document.createElement('canvas');
-    out.width = baseCanvas.width; out.height = baseCanvas.height;
-    out.getContext('2d').drawImage(tmp, 0, 0, out.width, out.height);
-    return out;
-  }
-
-  // رسم معاينة مع Fade-in
-  function drawPreviewWithFade(canvasEl, srcCanvas){
-    canvasEl.classList.add('fade-in');
-    const scale = Math.min(1, 260 / srcCanvas.width);
-    const w = Math.max(1, Math.round(srcCanvas.width * scale));
-    const h = Math.max(1, Math.round(srcCanvas.height * scale));
-    canvasEl.width = w; canvasEl.height = h;
-    const ctx = canvasEl.getContext('2d');
-    ctx.clearRect(0,0,w,h);
-    ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(srcCanvas, 0, 0, w, h);
-    requestAnimationFrame(()=>{ canvasEl.style.opacity = '1'; canvasEl.classList.remove('fade-in'); });
-  }
-
-  function disableActions(flag){
-    [btnProcess, btnDownload, btnZip, picker, vertCut, vertNum, bottomCut, bottomNum, vertSide, targetSel]
-      .forEach(el => el.disabled = flag);
-  }
-
-  function getGlobalOptions(){
-    return {
-      verticalPercent: parseFloat(vertNum.value),
-      bottomPercent: parseFloat(bottomNum.value),
-      side: vertSide.value,
-      target: targetSel.value
-    };
-  }
-
-  // معالجة صورة واحدة (قص + AI عند اللزوم)
-  async function processOne(idx, opts, {instantPreviewOnly=false}={}){
-    const it = items[idx]; if (!it || it.processing) return;
-    it.processing = true;
-    try{
-      const base = cropToCanvas(it.img, opts);
-      if (instantPreviewOnly){
-        // تحديث فوري بالقص فقط (بدون AI) لسرعة السحب
-        drawPreviewWithFade(it.cv, base);
-        it.lastCropped = base;
-        return;
-      }
-      const enhanced = (opts.target === 'same') ? await aiEnhanceKeepSameSize(base) : base;
-      it.enhanced = enhanced;
-      drawPreviewWithFade(it.cv, enhanced);
-    } finally { it.processing = false; }
-  }
-
-  // جدولة إعادة التحسين بالذكاء الصناعي بعد التوقف عن السحب (صامت)
-  function scheduleAI(idx){
-    const it = items[idx]; if (!it) return;
-    clearTimeout(it.aiTimer);
-    it.aiTimer = setTimeout(async ()=>{
-      const opts = {
-        verticalPercent: parseFloat(it.vcut.value),
-        bottomPercent: parseFloat(it.bcut.value),
-        side: vertSide.value,
-        target: targetSel.value
+      // ==================== Constants ====================
+      const MAX_FILES = 50;
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+      const MIME_MAP = {
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'webp': 'image/webp'
       };
-      await processOne(idx, opts, { instantPreviewOnly:false });
-    }, 2000); // 2s بعد توقف التحريك
-  }
-
-  // معالجة كل الصور بالتوازي
-  async function processAllParallel(opts){
-    if (!items.length) return;
-    aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ تحسين كل الصور بالذكاء الصناعي...';
-    disableActions(true); bar.value = 0; status.textContent = '🔧 بدء المعالجة...';
-    let done = 0;
-    await Promise.all(items.map((_, i) => (async () => {
-      await processOne(i, opts, { instantPreviewOnly:false });
-      done++; bar.value = (done / items.length) * 100;
-      status.textContent = `⚙️ تمت معالجة ${done}/${items.length}`;
-    })()));
-    aiStatus.textContent = '✅ تم تحسين كل الصور';
-    disableActions(false);
-  }
-
-  // إنشاء بطاقة معاينة
-  function createThumb(i){
-    const wrap = document.createElement('div'); wrap.className='thumb';
-    const cv = document.createElement('canvas'); cv.classList.add('fade-in'); wrap.appendChild(cv);
-    const controls = document.createElement('div'); controls.className='controls';
-    controls.innerHTML = `
-      <label>قص عمودي: <input type="range" min="0" max="15" step="0.5" value="${vertNum.value}" class="vcut"></label>
-      <label>قص سفلي: <input type="range" min="0" max="20" step="0.5" value="${bottomNum.value}" class="bcut"></label>
-      <button class="btn save">💾 حفظ الصورة</button>
-    `;
-    wrap.appendChild(controls);
-
-    const vcut = controls.querySelector('.vcut');
-    const bcut = controls.querySelector('.bcut');
-    const saveBtn = controls.querySelector('.save');
-
-    items[i].wrap = wrap; items[i].cv = cv; items[i].vcut = vcut; items[i].bcut = bcut;
-
-    let lastMove = 0;
-    const onDrag = async ()=>{
-      lastMove = Date.now();
-      // تحديث فوري بالقص فقط أثناء السحب
-      await processOne(i, {
-        verticalPercent: parseFloat(vcut.value),
-        bottomPercent: parseFloat(bcut.value),
-        side: vertSide.value,
-        target: targetSel.value
-      }, { instantPreviewOnly:true });
-      // جدولة إعادة التحسين الهادئة بعد التوقف
-      scheduleAI(i);
-    };
-    vcut.addEventListener('input', onDrag);
-    bcut.addEventListener('input', onDrag);
-
-    saveBtn.addEventListener('click', async ()=>{
-      // لو مفيش نسخة محسّنة بعد آخر تعديل، أعد التحسين ثم احفظ
-      const opts = {
-        verticalPercent: parseFloat(vcut.value),
-        bottomPercent: parseFloat(bcut.value),
-        side: vertSide.value,
-        target: targetSel.value
-      };
-      if (!items[i].enhanced || items[i].processing) await processOne(i, opts, { instantPreviewOnly:false });
-      const canvas = items[i].enhanced || items[i].lastCropped;
-      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
-      saveAs(blob, `mohamed_hammad${i+1}_AI.jpg`);
-    });
-
-    return wrap;
-  }
-
-  // تحميل الصور والبدء الفوري في التحسين المتوازي
-  picker.addEventListener('change', async ()=>{
-    files = Array.from(picker.files);
-    previewEl.innerHTML=''; items.length = 0;
-    if (!files.length) return;
-
-    for (let i=0;i<files.length;i++) items.push({ file: files[i], img: null, enhanced: null, processing:false, aiTimer:null });
-
-    for (let i=0;i<files.length;i++){
-      const thumb = createThumb(i);
-      previewEl.appendChild(thumb);
-    }
-
-    // حمّل الصور أولًا
-    await Promise.all(items.map(async (it)=>{
-      it.img = await new Promise((res,rej)=>{
-        const im = new Image(); im.onload=()=>res(im); im.onerror=rej; im.src = URL.createObjectURL(it.file);
-      });
-    }));
-
-    // ابدأ التحسين الفوري المتوازي
-    await processAllParallel(getGlobalOptions());
-  });
-
-  // تحديث فوري لكل الصور عند تغيير اتجاه القص أو وضع التحسين
-  function updateAllOnGlobalChange(){
-    // تحديث فوري بالقص لكل صورة
-    items.forEach((it, i)=>{
-      processOne(i, {
-        verticalPercent: parseFloat(it.vcut.value),
-        bottomPercent: parseFloat(it.bcut.value),
-        side: vertSide.value,
-        target: targetSel.value
-      }, { instantPreviewOnly:true });
-      scheduleAI(i); // ثم إعادة التحسين بهدوء بعد 2s
-    });
-  }
-  vertSide.addEventListener('change', updateAllOnGlobalChange);
-  targetSel.addEventListener('change', updateAllOnGlobalChange);
-
-  // مزامنة الأشرطة العامة مع النصّ وإطلاق التحديث الفوري لكل الصور
-  syncRangeNum(vertCut, vertNum, vertVal, updateAllOnGlobalChange);
-  syncRangeNum(bottomCut, bottomNum, bottomVal, updateAllOnGlobalChange);
-
-  // أزرار التحكم
-  btnProcess.addEventListener('click', async ()=>{
-    if (!items.length) return alert('ارفع صور أولاً');
-    await processAllParallel(getGlobalOptions());
-  });
-
-  btnDownload.addEventListener('click', async ()=>{
-    if (!items.length) return alert('ارفع صور أولاً');
-    disableActions(true); aiStatus.innerHTML = '<span class="spin">🔄</span> تجهيز الصور للتنزيل...';
-    await Promise.all(items.map(async (it, i)=>{
-      // تأكد من آخر نسخة محسنة
-      const opts = {
-        verticalPercent: parseFloat(it.vcut.value),
-        bottomPercent: parseFloat(it.bcut.value),
-        side: vertSide.value,
-        target: targetSel.value
-      };
-      if (!it.enhanced || it.processing) await processOne(i, opts, { instantPreviewOnly:false });
-      const canvas = it.enhanced || it.lastCropped;
-      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
-      saveAs(blob, `mohamed_hammad${i+1}_AI.jpg`);
-    }));
-    aiStatus.textContent = '✅ تم تنزيل كل الصور';
-    disableActions(false);
-  });
-
-  btnZip.addEventListener('click', async ()=>{
-    if (items.length < 2) return alert('زر الملف المضغوط يعمل فقط عند رفع أكثر من صورة واحدة');
-    disableActions(true); aiStatus.innerHTML = '<span class="spin">🔄</span> تجهيز الملف المضغوط...';
-    const zip = new JSZip();
-    await Promise.all(items.map(async (it, i)=>{
-      const opts = {
-        verticalPercent: parseFloat(it.vcut.value),
-        bottomPercent: parseFloat(it.bcut.value),
-        side: vertSide.value,
-        target: targetSel.value
-      };
-      if (!it.enhanced || it.processing) await processOne(i, opts, { instantPreviewOnly:false });
-      const canvas = it.enhanced || it.lastCropped;
-      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
-      zip.file(`mohamed_hammad${i+1}_AI.jpg`, blob);
-    }));
-    const zipBlob = await zip.generateAsync({ type:'blob' });
-    saveAs(zipBlob, 'mohamed_hammad_images.zip');
-    aiStatus.textContent = '✅ تم إنشاء وتنزيل الملف المضغوط';
-    disableActions(false);
-  });
-
-  // نافذة القسم
-  const popup=document.getElementById('popup');
-  const agreeBox=document.getElementById('agreeBox');
-  const agreeBtn=document.getElementById('agreeBtn');
-  if(!localStorage.getItem('agreedToFollow')) popup.classList.add('active');
-  agreeBox.addEventListener('change',()=>agreeBtn.disabled=!agreeBox.checked);
-  agreeBtn.addEventListener('click',()=>{ localStorage.setItem('agreedToFollow','true'); popup.classList.remove('active'); });
-})();
-</script>
-</body>
-</html>
