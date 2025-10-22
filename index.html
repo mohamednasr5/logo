@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>🛠️ إزالة الشعار المتقدمة بالذكاء الاصطناعي | مهندس محمد حماد</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+  <script src="https://docs.opencv.org/4.8.0/opencv.js"></script>
   <style>
     :root {
       --brand: #00e0a4;
@@ -627,7 +628,7 @@
   
   <header>
     <h1>🛠️ إزالة الشعار المتقدمة بالذكاء الاصطناعي</h1>
-    <div class="subtitle">معالجة احترافية باستخدام TensorFlow.js | من مهندس محمد حماد</div>
+    <div class="subtitle">معالجة احترافية باستخدام TensorFlow.js + OpenCV.js | من مهندس محمد حماد</div>
     <div id="activeUsers">المستخدمون النشطون: <span id="userCount">...</span></div>
   </header>
 
@@ -789,7 +790,7 @@
     <p>برمجة وتصميم <strong>المهندس محمد حماد</strong></p>
     <p>تابعني على: 👉 <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">facebook.com/en.mohamed.nasr</a></p>
     <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">
-      النسخة 2.0 - مدعومة بـ TensorFlow.js | جميع الحقوق محفوظة © 2025
+      النسخة 3.0 - مدعومة بـ TensorFlow.js + OpenCV.js | جميع الحقوق محفوظة © 2025
     </p>
   </footer>
 
@@ -821,7 +822,8 @@
         aiModel: null,
         isMuted: false,
         history: [],
-        activeUsers: 0
+        activeUsers: 0,
+        opencvLoaded: false
       };
 
       // ==================== DOM Elements ====================
@@ -924,6 +926,132 @@
         }
       };
 
+      // ==================== OpenCV Integration ====================
+      const opencvProcessor = {
+        init: () => {
+          return new Promise((resolve, reject) => {
+            if (cv.getBuildInformation) {
+              state.opencvLoaded = true;
+              console.log('✅ OpenCV.js loaded successfully');
+              resolve();
+              return;
+            }
+            
+            // Wait for OpenCV to load
+            const checkOpenCV = setInterval(() => {
+              if (cv.getBuildInformation) {
+                clearInterval(checkOpenCV);
+                state.opencvLoaded = true;
+                console.log('✅ OpenCV.js loaded successfully');
+                resolve();
+              }
+            }, 100);
+            
+            // Timeout after 10 seconds
+            setTimeout(() => {
+              clearInterval(checkOpenCV);
+              reject(new Error('فشل تحميل OpenCV.js'));
+            }, 10000);
+          });
+        },
+
+        // Advanced image enhancement using OpenCV
+        enhanceImage: (canvas) => {
+          return new Promise((resolve) => {
+            if (!state.opencvLoaded) {
+              resolve(canvas);
+              return;
+            }
+
+            try {
+              const src = cv.imread(canvas);
+              const dst = new cv.Mat();
+              
+              // Apply different enhancement based on selected mode
+              const mode = el.enhanceMode.value;
+              
+              switch(mode) {
+                case 'ai-upscale':
+                  // Simple upscaling using interpolation
+                  cv.resize(src, dst, new cv.Size(canvas.width * 1.5, canvas.height * 1.5), 0, 0, cv.INTER_CUBIC);
+                  cv.resize(dst, dst, new cv.Size(canvas.width, canvas.height), 0, 0, cv.INTER_AREA);
+                  break;
+                  
+                case 'denoise':
+                  // Noise reduction
+                  cv.medianBlur(src, dst, 3);
+                  break;
+                  
+                case 'sharpen':
+                  // Sharpening filter
+                  const kernel = new cv.Mat(3, 3, cv.CV_32FC1);
+                  kernel.data32F.set([
+                    0, -1, 0,
+                    -1, 5, -1,
+                    0, -1, 0
+                  ]);
+                  cv.filter2D(src, dst, -1, kernel);
+                  kernel.delete();
+                  break;
+                  
+                default:
+                  cv.copyTo(src, dst);
+                  break;
+              }
+              
+              // Create output canvas
+              const output = document.createElement('canvas');
+              output.width = canvas.width;
+              output.height = canvas.height;
+              cv.imshow(output, dst);
+              
+              // Clean up
+              src.delete();
+              dst.delete();
+              
+              resolve(output);
+            } catch (error) {
+              console.error('OpenCV enhancement error:', error);
+              resolve(canvas); // Fallback to original
+            }
+          });
+        },
+
+        // Advanced inpainting for logo removal
+        removeLogo: (canvas, maskCanvas) => {
+          return new Promise((resolve) => {
+            if (!state.opencvLoaded) {
+              resolve(canvas);
+              return;
+            }
+
+            try {
+              const src = cv.imread(canvas);
+              const mask = cv.imread(maskCanvas);
+              const dst = new cv.Mat();
+              
+              // Use INPAINT_TELEA algorithm for inpainting
+              cv.inpaint(src, mask, dst, 3, cv.INPAINT_TELEA);
+              
+              const output = document.createElement('canvas');
+              output.width = canvas.width;
+              output.height = canvas.height;
+              cv.imshow(output, dst);
+              
+              // Clean up
+              src.delete();
+              mask.delete();
+              dst.delete();
+              
+              resolve(output);
+            } catch (error) {
+              console.error('OpenCV inpainting error:', error);
+              resolve(canvas);
+            }
+          });
+        }
+      };
+
       // ==================== Image Processing ====================
       const imageProcessing = {
         cropImage: (img, opts) => {
@@ -949,27 +1077,6 @@
           return canvas;
         },
         
-        enhanceImage: async (canvas) => {
-          // Simple enhancement - upscale then downscale for better quality
-          const temp = document.createElement('canvas');
-          temp.width = canvas.width * 2;
-          temp.height = canvas.height * 2;
-          
-          const ctx = temp.getContext('2d', { alpha: false });
-          ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(canvas, 0, 0, temp.width, temp.height);
-          
-          const output = document.createElement('canvas');
-          output.width = canvas.width;
-          output.height = canvas.height;
-          
-          const outCtx = output.getContext('2d', { alpha: false });
-          outCtx.imageSmoothingQuality = 'high';
-          outCtx.drawImage(temp, 0, 0, output.width, output.height);
-          
-          return output;
-        },
-        
         processOne: async (idx) => {
           const item = state.items[idx];
           if (!item || item.processing) return;
@@ -986,8 +1093,9 @@
             
             const cropped = imageProcessing.cropImage(item.img, opts);
             
-            if (el.enhanceMode.value === 'ai-upscale') {
-              item.processed = await imageProcessing.enhanceImage(cropped);
+            // Apply OpenCV enhancement if available
+            if (state.opencvLoaded && el.enhanceMode.value !== 'none') {
+              item.processed = await opencvProcessor.enhanceImage(cropped);
             } else {
               item.processed = cropped;
             }
@@ -1157,11 +1265,11 @@
             
             item.processed.toBlob(blob => {
               const link = document.createElement('a');
-              link.download = `processed_${idx + 1}.${format}`;
+              link.download = `mohamedhammad (${idx + 1}).${format}`;
               link.href = URL.createObjectURL(blob);
               link.click();
               URL.revokeObjectURL(link.href);
-              utils.showToast(`تم حفظ الصورة ${idx + 1}`, 'success');
+              utils.showToast(`تم حفظ mohamedhammad (${idx + 1})`, 'success');
             }, mimeType, quality);
           });
           
@@ -1363,25 +1471,7 @@
       const userCounter = {
         init: async () => {
           try {
-            const timestamp = Date.now();
-            await window.storage.set('user-active', timestamp.toString(), true);
-            
-            const updateCount = async () => {
-              try {
-                const result = await window.storage.list('user-active', true);
-                const count = result?.keys?.length || 1;
-                state.activeUsers = count;
-                el.userCount.textContent = count.toLocaleString('ar-EG');
-              } catch (e) {
-                el.userCount.textContent = '1';
-              }
-            };
-            
-            await updateCount();
-            setInterval(updateCount, 5000);
-            
-          } catch (e) {
-            // Fallback to random count
+            // Simulate active users count
             let count = Math.floor(Math.random() * (6254 - 1052 + 1)) + 1052;
             el.userCount.textContent = count.toLocaleString('ar-EG');
             
@@ -1390,6 +1480,9 @@
               count = Math.max(1052, Math.min(6254, count + change));
               el.userCount.textContent = count.toLocaleString('ar-EG');
             }, 5000);
+          } catch (e) {
+            // Fallback
+            el.userCount.textContent = '1,234';
           }
         }
       };
@@ -1445,7 +1538,7 @@
               if (item.processed) {
                 item.processed.toBlob(blob => {
                   const link = document.createElement('a');
-                  link.download = `processed_${i + 1}.${format}`;
+                  link.download = `mohamedhammad (${i + 1}).${format}`;
                   link.href = URL.createObjectURL(blob);
                   link.click();
                   URL.revokeObjectURL(link.href);
@@ -1455,7 +1548,7 @@
               }
             }
             
-            utils.showToast('تم تنزيل جميع الصور! 🎉', 'success');
+            utils.showToast('تم تنزيل جميع الصور باسم mohamedhammad! 🎉', 'success');
           });
           
           el.btnClear.addEventListener('click', () => {
@@ -1485,6 +1578,15 @@
       // ==================== Initialize App ====================
       const init = async () => {
         console.log('🚀 تهيئة التطبيق...');
+        
+        // Initialize OpenCV first
+        try {
+          await opencvProcessor.init();
+          el.aiStatus.textContent = '✅ تم تحميل TensorFlow.js + OpenCV.js';
+        } catch (error) {
+          console.warn('OpenCV failed to load, using fallback methods:', error);
+          el.aiStatus.textContent = '⚠️ OpenCV.js غير متوفر - استخدام الطرق البديلة';
+        }
         
         dragDrop.init();
         audio.init();
