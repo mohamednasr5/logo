@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>🛠️ إزالة الشعار ورفع جودة الصور | من مهندس محمد حماد</title>
 
-<!-- سنحمّل Upscaler + نموذج ESRGAN x4plus ديناميكيًا مع fallback داخل السكربت بالأسفل -->
-
-<!-- أدوات ZIP & Save -->
+<!-- ZIP & Save -->
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
@@ -29,7 +27,7 @@
   .muted{opacity:.8;font-size:13px}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
   .thumb{background:#0c0f14;border:1px solid #2a2f3a;border-radius:12px;overflow:hidden;padding-bottom:10px;position:relative}
-  .thumb canvas{width:100%;display:block;opacity:1}
+  .thumb canvas{width:100%;display:block}
   .fade-in{opacity:0;transition:opacity .5s ease}
   .controls{padding:10px;background:#11171e;border-top:1px solid #2a2f3a;text-align:center}
   .controls label{font-size:12px;display:block;margin-bottom:4px}
@@ -45,7 +43,7 @@
     background-size:200% 100%;border-radius:10px;animation:moveBar 2s linear infinite}
   @keyframes moveBar{0%{background-position:0% 0}100%{background-position:-200% 0}}
 
-  /* الرسالة المتحركة أسفل الشريط */
+  /* رسالة الحالة أسفل الشريط */
   #aiStatus{text-align:center;margin-top:10px;font-size:15px;color:#00b8ff;font-weight:bold;min-height:1.4em}
   #aiStatus .spin{display:inline-block;animation:spin 1.2s linear infinite}
   @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -116,7 +114,7 @@
     <button class="btn" id="btnProcess">🔄 تنفيذ على الكل (إعادة التحسين)</button>
     <button class="btn" id="btnDownload">⬇️ تنزيل الكل (صور منفصلة)</button>
     <button class="btn" id="btnZip">📦 تنزيل ملف مضغوط (ZIP)</button>
-    <div class="muted">أي تغيير في المؤشرات يعيد التحسين للصورة المعنية.</div>
+    <div class="muted">أي تغيير في المؤشرات يحدّث المعاينة فورًا، ويُعاد التحسين تلقائيًا بعد التوقف.</div>
   </div>
 
   <div class="card">
@@ -188,7 +186,7 @@
 
   let files = [];
   // حالة لكل صورة
-  const items = []; // [{file, img, enhanced, wrap, cv, vcut, bcut, processing:false}]
+  const items = []; // { file, img, enhanced, wrap, cv, vcut, bcut, processing:false, aiTimer:null }
 
   // ===== تحميل السكربتات بنظام fallback =====
   function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
@@ -214,18 +212,16 @@
     }
   }
 
-  let upscaler = null;
+  let upscaler = null; let aiReady = false;
   async function ensureAI(){
     if (upscaler) return true;
     aiStatus.innerHTML = '<span class="spin">🔄</span> تهيئة نموذج الذكاء الصناعي (x4plus)...';
     try{
       await ensureUpscalerRuntime();
-      const modelOK = await ensureModelX4Plus();
-      if (!modelOK) {
-        aiStatus.textContent = '⚠️ تعذر تحميل نموذج الذكاء الصناعي — سيتم استخدام تحسين احتياطي.';
-        return false;
-      }
+      const ok = await ensureModelX4Plus();
+      if (!ok){ aiStatus.textContent = '⚠️ تعذر تحميل نموذج الذكاء الصناعي — سيتم استخدام تحسين احتياطي.'; return false; }
       upscaler = new window.Upscaler({ model: window.esrganx4plus });
+      aiReady = true;
       aiStatus.textContent = '✅ تم تهيئة الذكاء الصناعي';
       return true;
     }catch(err){
@@ -236,13 +232,11 @@
   }
 
   function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
-  function syncRangeNum(range,num,label){
-    const setBoth=val=>{ val=clamp(val,parseFloat(range.min),parseFloat(range.max)); range.value=num.value=val; label.textContent=val; };
+  function syncRangeNum(range,num,label,onChange){
+    const setBoth=val=>{ val=clamp(val,parseFloat(range.min),parseFloat(range.max)); range.value=num.value=val; label.textContent=val; onChange && onChange(); };
     range.addEventListener('input',()=>setBoth(parseFloat(range.value)));
     num.addEventListener('input',()=>setBoth(parseFloat(num.value)));
   }
-  syncRangeNum(vertCut,vertNum,vertVal);
-  syncRangeNum(bottomCut,bottomNum,bottomVal);
 
   // قص للصورة حسب الإعدادات (بدون تغيير الأبعاد بخلاف القص المطلوب)
   function cropToCanvas(img, opt){
@@ -260,11 +254,10 @@
     return c;
   }
 
-  // تحسين بالذكاء الصناعي مع الحفاظ على نفس الأبعاد النهائية (بعد القص)
+  // تحسين بالذكاء الصناعي ثم إرجاع لنفس الأبعاد (بعد القص)
   async function aiEnhanceKeepSameSize(baseCanvas){
-    // لو AI غير متاح سننفذ fallback bicubic
-    const aiReady = await ensureAI();
-    if (aiReady && upscaler && targetSel.value === 'same'){
+    const aiOk = await ensureAI();
+    if (aiOk && upscaler && targetSel.value === 'same'){
       try{
         const upscaled = await upscaler.upscale(baseCanvas, {
           output: 'canvas',
@@ -272,18 +265,14 @@
           padding: 8,
           progress: (p)=>{ status.textContent = `🔧 معالجة الذكاء الصناعي: ${(p*100|0)}%`; }
         });
-        // Downscale لنفس أبعاد baseCanvas
         const out = document.createElement('canvas');
         out.width = baseCanvas.width; out.height = baseCanvas.height;
         out.getContext('2d').drawImage(upscaled, 0, 0, out.width, out.height);
         return out;
-      }catch(err){
-        console.warn('AI enhance failed, using fallback', err);
-      }
+      }catch(err){ console.warn('AI enhance failed, fallback', err); }
     }
-    // fallback: bicubic upscale-downscale خفيف (مع الحفاظ على نفس الأبعاد)
+    // fallback: bicubic upscale-downscale خفيف مع الحفاظ على نفس الأبعاد
     const tmp = document.createElement('canvas');
-    // upscale 2x ثم downscale لنفس الحجم (يزيد نعومة بسيطة بدل لاشيء)
     tmp.width = baseCanvas.width*2; tmp.height = baseCanvas.height*2;
     tmp.getContext('2d').drawImage(baseCanvas, 0, 0, tmp.width, tmp.height);
     const out = document.createElement('canvas');
@@ -295,7 +284,6 @@
   // رسم معاينة مع Fade-in
   function drawPreviewWithFade(canvasEl, srcCanvas){
     canvasEl.classList.add('fade-in');
-    // اضبط المقاس المصغّر
     const scale = Math.min(1, 260 / srcCanvas.width);
     const w = Math.max(1, Math.round(srcCanvas.width * scale));
     const h = Math.max(1, Math.round(srcCanvas.height * scale));
@@ -304,7 +292,6 @@
     ctx.clearRect(0,0,w,h);
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(srcCanvas, 0, 0, w, h);
-    // trigger fade-in
     requestAnimationFrame(()=>{ canvasEl.style.opacity = '1'; canvasEl.classList.remove('fade-in'); });
   }
 
@@ -322,29 +309,47 @@
     };
   }
 
-  // معالجة صورة واحدة (قص + AI) وإظهارها
-  async function processOne(idx, opts){
+  // معالجة صورة واحدة (قص + AI عند اللزوم)
+  async function processOne(idx, opts, {instantPreviewOnly=false}={}){
     const it = items[idx]; if (!it || it.processing) return;
     it.processing = true;
     try{
       const base = cropToCanvas(it.img, opts);
+      if (instantPreviewOnly){
+        // تحديث فوري بالقص فقط (بدون AI) لسرعة السحب
+        drawPreviewWithFade(it.cv, base);
+        it.lastCropped = base;
+        return;
+      }
       const enhanced = (opts.target === 'same') ? await aiEnhanceKeepSameSize(base) : base;
       it.enhanced = enhanced;
       drawPreviewWithFade(it.cv, enhanced);
-    } finally {
-      it.processing = false;
-    }
+    } finally { it.processing = false; }
+  }
+
+  // جدولة إعادة التحسين بالذكاء الصناعي بعد التوقف عن السحب (صامت)
+  function scheduleAI(idx){
+    const it = items[idx]; if (!it) return;
+    clearTimeout(it.aiTimer);
+    it.aiTimer = setTimeout(async ()=>{
+      const opts = {
+        verticalPercent: parseFloat(it.vcut.value),
+        bottomPercent: parseFloat(it.bcut.value),
+        side: vertSide.value,
+        target: targetSel.value
+      };
+      await processOne(idx, opts, { instantPreviewOnly:false });
+    }, 2000); // 2s بعد توقف التحريك
   }
 
   // معالجة كل الصور بالتوازي
-  async function processAllParallel(){
+  async function processAllParallel(opts){
     if (!items.length) return;
     aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ تحسين كل الصور بالذكاء الصناعي...';
     disableActions(true); bar.value = 0; status.textContent = '🔧 بدء المعالجة...';
     let done = 0;
-    const opts = getGlobalOptions();
     await Promise.all(items.map((_, i) => (async () => {
-      await processOne(i, opts);
+      await processOne(i, opts, { instantPreviewOnly:false });
       done++; bar.value = (done / items.length) * 100;
       status.textContent = `⚙️ تمت معالجة ${done}/${items.length}`;
     })()));
@@ -352,7 +357,7 @@
     disableActions(false);
   }
 
-  // إنشاء بطاقة معاينة لصورة
+  // إنشاء بطاقة معاينة
   function createThumb(i){
     const wrap = document.createElement('div'); wrap.className='thumb';
     const cv = document.createElement('canvas'); cv.classList.add('fade-in'); wrap.appendChild(cv);
@@ -363,39 +368,39 @@
       <button class="btn save">💾 حفظ الصورة</button>
     `;
     wrap.appendChild(controls);
-    // ربط الحدث
+
     const vcut = controls.querySelector('.vcut');
     const bcut = controls.querySelector('.bcut');
     const saveBtn = controls.querySelector('.save');
-    // حفظ المراجع
+
     items[i].wrap = wrap; items[i].cv = cv; items[i].vcut = vcut; items[i].bcut = bcut;
 
-    let localTimer;
-    const reprocessLocal = ()=>{
-      if (!items[i]) return;
-      // التغيير في الشريط يعيد التحسين للصورة المحددة فقط (debounce)
-      clearTimeout(localTimer);
-      localTimer = setTimeout(()=>processOne(i, {
+    let lastMove = 0;
+    const onDrag = async ()=>{
+      lastMove = Date.now();
+      // تحديث فوري بالقص فقط أثناء السحب
+      await processOne(i, {
         verticalPercent: parseFloat(vcut.value),
         bottomPercent: parseFloat(bcut.value),
         side: vertSide.value,
         target: targetSel.value
-      }), 150);
+      }, { instantPreviewOnly:true });
+      // جدولة إعادة التحسين الهادئة بعد التوقف
+      scheduleAI(i);
     };
-    vcut.addEventListener('input', reprocessLocal);
-    bcut.addEventListener('input', reprocessLocal);
+    vcut.addEventListener('input', onDrag);
+    bcut.addEventListener('input', onDrag);
 
     saveBtn.addEventListener('click', async ()=>{
-      if (!items[i]) return;
+      // لو مفيش نسخة محسّنة بعد آخر تعديل، أعد التحسين ثم احفظ
       const opts = {
         verticalPercent: parseFloat(vcut.value),
         bottomPercent: parseFloat(bcut.value),
         side: vertSide.value,
         target: targetSel.value
       };
-      // لو مفيش نسخة محسّنة متاحة بعد آخر تعديل، أعد التحسين ثم احفظ
-      if (!items[i].enhanced || items[i].processing) await processOne(i, opts);
-      const canvas = items[i].enhanced;
+      if (!items[i].enhanced || items[i].processing) await processOne(i, opts, { instantPreviewOnly:false });
+      const canvas = items[i].enhanced || items[i].lastCropped;
       const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
       saveAs(blob, `mohamed_hammad${i+1}_AI.jpg`);
     });
@@ -409,61 +414,86 @@
     previewEl.innerHTML=''; items.length = 0;
     if (!files.length) return;
 
-    // جهّز عناصر الحالة
-    for (let i=0;i<files.length;i++) items.push({ file: files[i], img: null, enhanced: null, processing:false });
+    for (let i=0;i<files.length;i++) items.push({ file: files[i], img: null, enhanced: null, processing:false, aiTimer:null });
 
-    // اصنع ثَمَانبيلز + إطارات
     for (let i=0;i<files.length;i++){
       const thumb = createThumb(i);
       previewEl.appendChild(thumb);
     }
 
     // حمّل الصور أولًا
-    await Promise.all(items.map(async (it, idx)=>{
+    await Promise.all(items.map(async (it)=>{
       it.img = await new Promise((res,rej)=>{
-        const im = new Image();
-        im.onload = ()=>res(im);
-        im.onerror = rej;
-        im.src = URL.createObjectURL(it.file);
+        const im = new Image(); im.onload=()=>res(im); im.onerror=rej; im.src = URL.createObjectURL(it.file);
       });
     }));
 
     // ابدأ التحسين الفوري المتوازي
-    await processAllParallel();
+    await processAllParallel(getGlobalOptions());
   });
 
-  // إعادة التحسين للجميع (وفق الإعدادات الحالية)
+  // تحديث فوري لكل الصور عند تغيير اتجاه القص أو وضع التحسين
+  function updateAllOnGlobalChange(){
+    // تحديث فوري بالقص لكل صورة
+    items.forEach((it, i)=>{
+      processOne(i, {
+        verticalPercent: parseFloat(it.vcut.value),
+        bottomPercent: parseFloat(it.bcut.value),
+        side: vertSide.value,
+        target: targetSel.value
+      }, { instantPreviewOnly:true });
+      scheduleAI(i); // ثم إعادة التحسين بهدوء بعد 2s
+    });
+  }
+  vertSide.addEventListener('change', updateAllOnGlobalChange);
+  targetSel.addEventListener('change', updateAllOnGlobalChange);
+
+  // مزامنة الأشرطة العامة مع النصّ وإطلاق التحديث الفوري لكل الصور
+  syncRangeNum(vertCut, vertNum, vertVal, updateAllOnGlobalChange);
+  syncRangeNum(bottomCut, bottomNum, bottomVal, updateAllOnGlobalChange);
+
+  // أزرار التحكم
   btnProcess.addEventListener('click', async ()=>{
     if (!items.length) return alert('ارفع صور أولاً');
-    await processAllParallel();
+    await processAllParallel(getGlobalOptions());
   });
 
-  // تنزيل الكل (ملفات منفصلة)
   btnDownload.addEventListener('click', async ()=>{
     if (!items.length) return alert('ارفع صور أولاً');
     disableActions(true); aiStatus.innerHTML = '<span class="spin">🔄</span> تجهيز الصور للتنزيل...';
-    // لو في عناصر غير محسّنة نتيجة تغييرات، أعد تحسينها بالتوازي
-    const opts = getGlobalOptions();
-    await Promise.all(items.map((it, i)=> (async ()=>{
-      if (!it.enhanced || it.processing) await processOne(i, opts);
-      const blob = await new Promise(r => it.enhanced.toBlob(r, 'image/jpeg', 0.95));
+    await Promise.all(items.map(async (it, i)=>{
+      // تأكد من آخر نسخة محسنة
+      const opts = {
+        verticalPercent: parseFloat(it.vcut.value),
+        bottomPercent: parseFloat(it.bcut.value),
+        side: vertSide.value,
+        target: targetSel.value
+      };
+      if (!it.enhanced || it.processing) await processOne(i, opts, { instantPreviewOnly:false });
+      const canvas = it.enhanced || it.lastCropped;
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
       saveAs(blob, `mohamed_hammad${i+1}_AI.jpg`);
-    })()));
+    }));
     aiStatus.textContent = '✅ تم تنزيل كل الصور';
     disableActions(false);
   });
 
-  // تنزيل كملف مضغوط
   btnZip.addEventListener('click', async ()=>{
     if (items.length < 2) return alert('زر الملف المضغوط يعمل فقط عند رفع أكثر من صورة واحدة');
     disableActions(true); aiStatus.innerHTML = '<span class="spin">🔄</span> تجهيز الملف المضغوط...';
     const zip = new JSZip();
-    const opts = getGlobalOptions();
-    await Promise.all(items.map((it, i)=> (async ()=>{
-      if (!it.enhanced || it.processing) await processOne(i, opts);
-      const blob = await new Promise(r => it.enhanced.toBlob(r, 'image/jpeg', 0.95));
+    await Promise.all(items.map(async (it, i)=>{
+      const opts = {
+        verticalPercent: parseFloat(it.vcut.value),
+        bottomPercent: parseFloat(it.bcut.value),
+        side: vertSide.value,
+        target: targetSel.value
+      };
+      if (!it.enhanced || it.processing) await processOne(i, opts, { instantPreviewOnly:false });
+      const canvas = it.enhanced || it.lastCropped;
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
       zip.file(`mohamed_hammad${i+1}_AI.jpg`, blob);
-    })()));
+    }));
     const zipBlob = await zip.generateAsync({ type:'blob' });
     saveAs(zipBlob, 'mohamed_hammad_images.zip');
     aiStatus.textContent = '✅ تم إنشاء وتنزيل الملف المضغوط';
