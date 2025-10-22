@@ -7,7 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
   <script src="https://docs.opencv.org/4.8.0/opencv.js"></script>
   <style>
-    /* نفس الأنماط السابقة */
     :root {
       --brand: #00e0a4;
       --bg: #0f1115;
@@ -658,12 +657,140 @@
       50% { opacity: 0.5; }
       100% { opacity: 1; }
     }
+
+    /* Oath Modal */
+    .oath-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .oath-modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .oath-content {
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0, 224, 164, 0.3);
+      transform: translate(0, 0);
+      animation: floatOath 4s ease-in-out infinite;
+    }
+    @keyframes floatOath {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .oath-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 224, 164, 0.2) 0%, transparent 70%);
+      z-index: -1;
+      transition: background 0.3s ease;
+    }
+    .oath-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+    .oath-checkbox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .oath-checkbox input {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--brand);
+    }
+    .oath-checkbox label {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .oath-btn-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+    .oath-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .oath-btn-follow {
+      background: #1877f2;
+      color: white;
+    }
+    .oath-btn-follow:hover {
+      background: #166fe5;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(24, 119, 242, 0.4);
+    }
+    .oath-btn-agree {
+      background: var(--brand);
+      color: #02130e;
+    }
+    .oath-btn-agree:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .oath-btn-agree:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 224, 164, 0.4);
+    }
   </style>
 </head>
 <body>
   <button id="themeToggle" title="تبديل الوضع">🌙</button>
   <button id="soundToggle" title="تشغيل/إيقاف الصوت">🔊</button>
-  
+
+  <!-- Oath Modal -->
+  <div id="oathModal" class="oath-modal">
+    <div class="oath-content">
+      <div class="oath-text">
+        أقسم بالله العظيم أنني أتابع المهندس محمد حماد على صفحته على فيسبوك وإلا أكون قد تابعتها قبل استخدامي لهذه الأداة، وإن لم أتابعه أكون ظالمًا له وظالمًا لنفسي وسأتحمل الحساب يوم الدين.
+      </div>
+      <div class="oath-checkbox">
+        <input type="checkbox" id="oathCheck">
+        <label for="oathCheck">أقسم على ذلك</label>
+      </div>
+      <div class="oath-btn-group">
+        <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank" class="oath-btn oath-btn-follow">
+          <span>📘</span> الدخول لحساب المهندس لمتابعته أولاً
+        </a>
+        <button id="oathAgree" class="oath-btn oath-btn-agree" disabled>موافق</button>
+      </div>
+    </div>
+  </div>
+
   <header>
     <h1>🛠️ إزالة الشعار المتقدمة بالذكاء الاصطناعي</h1>
     <div class="subtitle">معالجة احترافية باستخدام TensorFlow.js + OpenCV.js | تحسين 4K تلقائي | من مهندس محمد حماد</div>
@@ -852,6 +979,8 @@
         'png': 'image/png',
         'webp': 'image/webp'
       };
+      const OATH_COOKIE_NAME = 'oath_accepted';
+      const OATH_COOKIE_DURATION = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
       
       // ==================== State Management ====================
       const state = {
@@ -885,6 +1014,9 @@
         themeToggle: document.getElementById('themeToggle'),
         fileCount: document.getElementById('fileCount'),
         fileCountNum: document.getElementById('fileCountNum'),
+        oathModal: document.getElementById('oathModal'),
+        oathCheck: document.getElementById('oathCheck'),
+        oathAgree: document.getElementById('oathAgree'),
         
         // Controls
         removalMethod: document.getElementById('removalMethod'),
@@ -974,6 +1106,55 @@
           if (text) {
             el.statusText.textContent = text;
           }
+        },
+
+        getCookie: (name) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(';').shift();
+          return null;
+        },
+
+        setCookie: (name, value, duration) => {
+          const expires = new Date(Date.now() + duration).toUTCString();
+          document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Strict`;
+        }
+      };
+
+      // ==================== Oath Modal Management ====================
+      const oathModal = {
+        init: () => {
+          // Check if oath cookie exists
+          if (!utils.getCookie(OATH_COOKIE_NAME)) {
+            el.oathModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+          } else {
+            el.oathModal.style.display = 'none';
+          }
+
+          // Enable/disable agree button based on checkbox
+          el.oathCheck.addEventListener('change', () => {
+            el.oathAgree.disabled = !el.oathCheck.checked;
+          });
+
+          // Handle agree button click
+          el.oathAgree.addEventListener('click', () => {
+            if (el.oathCheck.checked) {
+              utils.setCookie(OATH_COOKIE_NAME, 'accepted', OATH_COOKIE_DURATION);
+              el.oathModal.classList.remove('show');
+              document.body.style.overflow = '';
+              utils.showToast('تم قبول القسم، يمكنك الآن استخدام الأداة', 'success');
+            }
+          });
+
+          // Mouse move animation for oath modal
+          el.oathModal.addEventListener('mousemove', (e) => {
+            const rect = el.oathModal.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            el.oathModal.querySelector('.oath-content').style.setProperty('--mouse-x', `${x}%`);
+            el.oathModal.querySelector('.oath-content').style.setProperty('--mouse-y', `${y}%`);
+          });
         }
       };
 
@@ -984,10 +1165,7 @@
             utils.updateProgress(10, '🔄 جارٍ تحميل نموذج ESPCN...');
             el.aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ تحميل نموذج ESPCN للتحسين 4K...';
             
-            // محاولة تحميل نموذج ESPCN بصيغة TensorFlow.js
-            // إذا فشل، نستخدم خوارزميات بديلة
             try {
-              // محاولة تحميل نموذج ESPCN مسبق التحويل
               state.espcnModel = await tf.loadGraphModel('https://mohamednasr5.github.io/logo/ESPCN_x4/model.json');
               utils.updateProgress(100, '✅ تم تحميل نموذج ESPCN');
               el.aiStatus.textContent = '✅ تم تحميل نموذج ESPCN للتحسين 4K';
@@ -1006,30 +1184,24 @@
           }
         },
 
-        // 4K Upscaling using ESPCN or fallback
         upscaleTo4K: async (canvas) => {
           if (!state.espcnModel) {
-            // استخدام OpenCV كبديل
             return await opencvProcessor.enhanceImage(canvas, '4k-upscale');
           }
 
           try {
-            // Convert canvas to tensor
             const tensor = tf.browser.fromPixels(canvas)
               .resizeNearestNeighbor([canvas.height, canvas.width])
               .toFloat()
               .div(255.0)
               .expandDims(0);
 
-            // Run ESPCN model
             const prediction = state.espcnModel.predict(tensor);
             
-            // Convert back to canvas
             const upscaled = await tf.browser.toPixels(
               prediction.squeeze().mul(255).cast('int32')
             );
             
-            // Create output canvas
             const output = document.createElement('canvas');
             output.width = canvas.width * 4;
             output.height = canvas.height * 4;
@@ -1037,14 +1209,12 @@
             const imageData = new ImageData(upscaled, output.width, output.height);
             ctx.putImageData(imageData, 0, 0);
             
-            // Clean up tensors
             tensor.dispose();
             prediction.dispose();
             
             return output;
           } catch (error) {
             console.error('ESPCN upscaling error:', error);
-            // Fallback to OpenCV
             return await opencvProcessor.enhanceImage(canvas, '4k-upscale');
           }
         }
@@ -1090,47 +1260,34 @@
               
               switch(mode) {
                 case '4k-upscale':
-                  // Advanced 4K upscaling using OpenCV
                   const targetWidth = Math.min(3840, canvas.width * 4);
                   const targetHeight = Math.min(2160, canvas.height * 4);
-                  
-                  // Use high-quality interpolation
                   cv.resize(src, dst, new cv.Size(targetWidth, targetHeight), 0, 0, cv.INTER_LANCZOS4);
-                  
-                  // Apply advanced sharpening
                   const sharpened = new cv.Mat();
                   const kernel = new cv.Mat(3, 3, cv.CV_32FC1);
                   kernel.data32F.set([0, -0.5, 0, -0.5, 3, -0.5, 0, -0.5, 0]);
                   cv.filter2D(dst, sharpened, -1, kernel);
-                  
-                  // Apply bilateral filter for noise reduction
                   const final = new cv.Mat();
                   cv.bilateralFilter(sharpened, final, 9, 75, 75);
-                  
                   const output = document.createElement('canvas');
                   output.width = targetWidth;
                   output.height = targetHeight;
                   cv.imshow(output, final);
-                  
-                  // Clean up
                   sharpened.delete();
                   final.delete();
                   kernel.delete();
                   src.delete();
                   dst.delete();
-                  
                   resolve(output);
                   break;
                   
                 case 'ai-upscale':
                   cv.resize(src, dst, new cv.Size(canvas.width * 2, canvas.height * 2), 0, 0, cv.INTER_CUBIC);
                   cv.resize(dst, dst, new cv.Size(canvas.width, canvas.height), 0, 0, cv.INTER_AREA);
-                  
                   const output2 = document.createElement('canvas');
                   output2.width = canvas.width;
                   output2.height = canvas.height;
                   cv.imshow(output2, dst);
-                  
                   src.delete();
                   dst.delete();
                   resolve(output2);
@@ -1138,12 +1295,10 @@
                   
                 case 'denoise':
                   cv.fastNlMeansDenoisingColored(src, dst, 10, 10, 7, 21);
-                  
                   const output3 = document.createElement('canvas');
                   output3.width = canvas.width;
                   output3.height = canvas.height;
                   cv.imshow(output3, dst);
-                  
                   src.delete();
                   dst.delete();
                   resolve(output3);
@@ -1153,12 +1308,10 @@
                   const kernel2 = new cv.Mat(3, 3, cv.CV_32FC1);
                   kernel2.data32F.set([0, -1, 0, -1, 5, -1, 0, -1, 0]);
                   cv.filter2D(src, dst, -1, kernel2);
-                  
                   const output4 = document.createElement('canvas');
                   output4.width = canvas.width;
                   output4.height = canvas.height;
                   cv.imshow(output4, dst);
-                  
                   src.delete();
                   dst.delete();
                   kernel2.delete();
@@ -1217,7 +1370,6 @@
             
             const preview = imageProcessing.cropImage(item.img, opts);
             
-            // Update preview immediately
             const canvas = item.canvas;
             const scale = Math.min(1, 260 / Math.max(preview.width, preview.height));
             canvas.width = Math.max(1, Math.round(preview.width * scale));
@@ -1248,7 +1400,6 @@
             
             const cropped = imageProcessing.cropImage(item.img, opts);
             
-            // Apply enhancement automatically based on selected mode
             const enhanceMode = el.enhanceMode.value;
             
             if (enhanceMode === '4k-upscale') {
@@ -1259,7 +1410,6 @@
               item.processed = cropped;
             }
             
-            // Update preview
             imageProcessing.updateThumbPreview(idx);
             
           } catch (error) {
@@ -1388,7 +1538,6 @@
           const controls = document.createElement('div');
           controls.className = 'thumb-controls';
           
-          // Stats for individual image
           const stats = document.createElement('div');
           stats.className = 'thumb-stats';
           stats.innerHTML = `
@@ -1505,7 +1654,6 @@
               const card = ui.createThumbCard(file, state.items.length - 1);
               el.gallery.appendChild(card);
               
-              // Apply enhancement automatically
               await imageProcessing.processOne(state.items.length - 1);
               
               const progress = 10 + ((i + 1) / filesToProcess.length) * 80;
@@ -1537,17 +1685,15 @@
       const init = async () => {
         console.log('🚀 تهيئة التطبيق...');
         
-        // Initialize ESPCN model first (will fallback if not available)
+        oathModal.init();
         await espcnProcessor.init();
         
-        // Initialize OpenCV
         try {
           await opencvProcessor.init();
         } catch (error) {
           console.warn('OpenCV failed to load:', error);
         }
         
-        // Initialize other components
         dragDrop.init();
         audio.init();
         theme.init();
