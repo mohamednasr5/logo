@@ -984,7 +984,9 @@
             el.aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ تحميل نموذج ESPCN للتحسين 4K...';
             
             // Load ESPCN model
-            state.espcnModel = await tf.loadGraphModel('https://mohamednasr5.github.io/logo/ESPCN_x4.pb');
+state.sr = new cv.dnn.SuperResolution();
+await state.sr.readModel('https://raw.githubusercontent.com/mohamednasr5/logo/e3cdbfe8b47d597eedc51b1678f7d197f047a57e/ESPCN_x4.pb');
+state.sr.setModel('espcn', 4);
             
             utils.updateProgress(100, '✅ تم تحميل نموذج ESPCN');
             el.aiStatus.textContent = '✅ تم تحميل نموذج ESPCN للتحسين 4K';
@@ -1683,3 +1685,4 @@
   </script>
 </body>
 </html>
+
