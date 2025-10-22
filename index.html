@@ -4,6 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>🛠️ إزالة الشعار ورفع جودة الصور | من مهندس محمد حماد</title>
+
+<!-- مكتبة الذكاء الصناعي لرفع الجودة -->
+<script src="https://cdn.jsdelivr.net/npm/upscaler@1.0.0/dist/browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
 <style>
   :root { --brand:#00e0a4; --bg:#0f1115; --panel:#151923; --text:#e9eef3; }
   body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial}
@@ -26,7 +32,7 @@
   .controls{padding:10px;background:#11171e;border-top:1px solid #2a2f3a;text-align:center}
   .controls label{font-size:12px;display:block;margin-bottom:4px}
 
-  /* 🎨 شريط التقدم المتحرك */
+  /* شريط التقدم */
   progress {
     width: 100%;
     height: 14px;
@@ -53,6 +59,23 @@
     100% { background-position: -200% 0; }
   }
 
+  /* الرسالة المتحركة أسفل الشريط */
+  #aiStatus {
+    text-align:center;
+    margin-top:10px;
+    font-size:15px;
+    color:#00b8ff;
+    font-weight:bold;
+  }
+  #aiStatus span {
+    display:inline-block;
+    animation: spin 1.2s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
   footer{opacity:.85;text-align:center;padding:24px 0;font-size:15px;color:#b4c7d4}
   footer a{color:var(--brand);text-decoration:none;font-weight:bold}
   #popup{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;visibility:hidden;opacity:0;transition:.3s;}
@@ -61,23 +84,11 @@
   #popup h2{color:var(--brand);margin-bottom:10px}
   #popup button{margin-top:15px}
   #activeUsers{margin-top:10px;font-size:18px;color:#00e0a4;font-weight:bold;}
-
-  /* 🎵 زر التحكم في الصوت */
   #soundToggle {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background: var(--brand);
-    color: #02130e;
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 0 12px rgba(0,0,0,0.5);
-    z-index: 999;
+    position: fixed;bottom: 20px;left: 20px;
+    background: var(--brand);color: #02130e;border: none;border-radius: 50%;
+    width: 48px;height: 48px;font-size: 22px;font-weight: bold;
+    cursor: pointer;box-shadow: 0 0 12px rgba(0,0,0,0.5);z-index: 999;
     transition: transform .2s ease;
   }
   #soundToggle:hover { transform: scale(1.1); }
@@ -86,7 +97,7 @@
 <body>
 <header>
   <h1>🛠️ إزالة الشعار ورفع جودة الصور | من مهندس محمد حماد</h1>
-  <div class="muted">يمكنك رفع عدد 50 صورة معاً | من أجل عيوني متابعيني</div>
+  <div class="muted">يمكنك رفع عدد 50 صورة معاً | من أجل عيوني متابعيني ❤️</div>
   <div id="activeUsers">يستخدم هذه الأداة الآن: <span id="userCount">0</span> مستخدم</div>
 </header>
 
@@ -139,6 +150,7 @@
       <progress id="bar" max="100" value="0"></progress>
       <span id="status" class="muted">جاهز</span>
     </div>
+    <div id="aiStatus"> </div>
   </div>
 
   <div class="card">
@@ -149,28 +161,22 @@
 
 <footer>
   هذه الأداة من برمجة وملك <strong>المهندس محمد حماد</strong> – تابعوه على الفيسبوك:
-  <br>
-  👉 <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">facebook.com/en.mohamed.nasr</a>
+  <br>👉 <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">facebook.com/en.mohamed.nasr</a>
 </footer>
 
-<!-- 🔊 الصوت الخلفي -->
 <audio id="bgMusic" src="https://mohamednasr5.github.io/logo/bg.mp3" loop autoplay></audio>
 <button id="soundToggle">🔊</button>
 
-<!-- ⚠️ نافذة القسم -->
+<!-- نافذة القسم -->
 <div id="popup">
   <div class="box">
     <h2>⚠️ قسم المستخدم</h2>
 <p style="font-size:18px;line-height:1.8;text-align:center;color:#fff;">
-قبل استخدام هذه الأداة، <strong>أُقْسِم بالله العظيم</strong>، الذي يعلم السر وأخفى،  
+قبل استخدام هذه الأداة، <strong>أُقْسِم بالله العظيم</strong>  
 أن أتابع حساب المهندس <strong>محمد حماد</strong> على فيسبوك  
 (<a href="https://www.facebook.com/en.mohamed.nasr" target="_blank" style="color:#00e0a4;">تابع من هنا</a>)  
-وأشهد الله أني إن استخدمت هذه الأداة دون متابعة، أو تابعته ثم ألغيت المتابعة بعد ذلك،  
-فإني أكون قد أخلفت وعدي، وخنت أمانتي، وظلمت نفسي.  
-<br><br>
-وأعلم أن الله مطّلع عليّ في السر والعلن،  
-فإن صدقت في عهدي فليباركني الله في عملي،  
-وإن خالفت، فأسأل الله أن يؤدبني برحمته قبل عدله.  
+وأشهد الله أني إن استخدمت الأداة دون متابعة، أو ألغيت المتابعة لاحقًا،  
+فإني أكون قد أخلفت وعدي وخنت أمانتي وظلمت نفسي.  
 </p>
     <p>✳️ رابط المتابعة: <br>
       <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank" style="color:#00e0a4;font-weight:bold">متابعة المهندس محمد حماد الآن</a>
@@ -180,69 +186,36 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 <script>
 (() => {
-  // === عداد المستخدمين النشطين ===
-  const userCountEl = document.getElementById('userCount');
-  let users = Math.floor(Math.random() * (6254 - 1052 + 1)) + 1052;
-  userCountEl.textContent = users.toLocaleString('ar-EG');
+  const userCountEl=document.getElementById('userCount');
+  let users=Math.floor(Math.random()*(6254-1052+1))+1052;
+  userCountEl.textContent=users.toLocaleString('ar-EG');
+  setInterval(()=>{const change=Math.floor(Math.random()*10)-5;
+  users=Math.max(1052,Math.min(6254,users+change));
+  userCountEl.textContent=users.toLocaleString('ar-EG');},3000);
 
-  setInterval(() => {
-    const change = Math.floor(Math.random() * 10) - 5;
-    users = Math.max(1052, Math.min(6254, users + change));
-    userCountEl.textContent = users.toLocaleString('ar-EG');
-  }, 3000);
+  const bgMusic=document.getElementById('bgMusic');
+  const soundBtn=document.getElementById('soundToggle');
+  let isMuted=false; bgMusic.volume=0.3;
+  document.addEventListener('click',()=>{if(bgMusic.paused&&!isMuted)bgMusic.play().catch(()=>{});},{once:true});
+  soundBtn.addEventListener('click',()=>{if(isMuted){bgMusic.muted=false;bgMusic.play();soundBtn.textContent="🔊";}else{bgMusic.muted=true;soundBtn.textContent="🔇";}isMuted=!isMuted;});
 
-  // 🎵 الصوت الخلفي
-  const bgMusic = document.getElementById('bgMusic');
-  const soundBtn = document.getElementById('soundToggle');
-  let isMuted = false;
-  bgMusic.volume = 0.3;
-
-  document.addEventListener('click', () => {
-    if (bgMusic.paused && !isMuted) bgMusic.play().catch(()=>{});
-  }, {once:true});
-
-  soundBtn.addEventListener('click', () => {
-    if (isMuted) {
-      bgMusic.muted = false;
-      bgMusic.play();
-      soundBtn.textContent = "🔊";
-    } else {
-      bgMusic.muted = true;
-      soundBtn.textContent = "🔇";
-    }
-    isMuted = !isMuted;
-  });
-
-  // === باقي الأكواد الخاصة بالمعالجة ===
   const picker=document.getElementById('picker');
-  const vertCut=document.getElementById('vertCut');
-  const bottomCut=document.getElementById('bottomCut');
-  const vertNum=document.getElementById('vertNum');
-  const bottomNum=document.getElementById('bottomNum');
-  const vertVal=document.getElementById('vertVal');
-  const bottomVal=document.getElementById('bottomVal');
-  const vertSide=document.getElementById('vertSide');
-  const targetSel=document.getElementById('target');
-  const previewEl=document.getElementById('preview');
-  const bar=document.getElementById('bar');
-  const status=document.getElementById('status');
-  const btnProcess=document.getElementById('btnProcess');
-  const btnDownload=document.getElementById('btnDownload');
+  const vertCut=document.getElementById('vertCut'), bottomCut=document.getElementById('bottomCut');
+  const vertNum=document.getElementById('vertNum'), bottomNum=document.getElementById('bottomNum');
+  const vertVal=document.getElementById('vertVal'), bottomVal=document.getElementById('bottomVal');
+  const vertSide=document.getElementById('vertSide'), targetSel=document.getElementById('target');
+  const previewEl=document.getElementById('preview'), bar=document.getElementById('bar');
+  const status=document.getElementById('status'), aiStatus=document.getElementById('aiStatus');
+  const btnProcess=document.getElementById('btnProcess'), btnDownload=document.getElementById('btnDownload');
   const btnZip=document.getElementById('btnZip');
 
   let files=[],previews=[];
-
   function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
   function syncRangeNum(range,num,label){
-    const setBoth=val=>{
-      val=clamp(val,parseFloat(range.min),parseFloat(range.max));
-      range.value=num.value=val;label.textContent=val;
-      updateGlobalPreviews();
-    };
+    const setBoth=val=>{val=clamp(val,parseFloat(range.min),parseFloat(range.max));
+    range.value=num.value=val;label.textContent=val;updateGlobalPreviews();};
     range.addEventListener('input',()=>setBoth(parseFloat(range.value)));
     num.addEventListener('input',()=>setBoth(parseFloat(num.value)));
   }
@@ -251,162 +224,49 @@
   [vertSide,targetSel].forEach(el=>el.addEventListener('change',updateGlobalPreviews));
 
   picker.addEventListener('change',async()=>{
-    files=Array.from(picker.files);
-    if(!files.length)return;
+    files=Array.from(picker.files); if(!files.length)return;
     previewEl.innerHTML='';previews=[];
     for(let i=0;i<files.length;i++){
       const img=await loadImage(files[i]);
-      const c=cropImage(img,getGlobalOptions());
+      const c=await cropImage(img,getGlobalOptions());
       const div=createPreview(c,files[i].name,i);
       previewEl.appendChild(div);
       previews.push({img,c,div});
     }
   });
 
-  function loadImage(file){
-    return new Promise((res,rej)=>{
-      const img=new Image();
-      img.onload=()=>res(img);
-      img.onerror=rej;
-      img.src=URL.createObjectURL(file);
-    });
-  }
+  function loadImage(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>res(img);img.onerror=rej;img.src=URL.createObjectURL(file);});}
+  function getGlobalOptions(){return{verticalPercent:parseFloat(vertNum.value),bottomPercent:parseFloat(bottomNum.value),side:vertSide.value,target:targetSel.value};}
 
-  function getGlobalOptions(){
-    return{
-      verticalPercent:parseFloat(vertNum.value),
-      bottomPercent:parseFloat(bottomNum.value),
-      side:vertSide.value,
-      target:targetSel.value
-    };
-  }
-
-  function cropImage(img,opt){
-    const {verticalPercent,bottomPercent,side}=opt;
+  async function cropImage(img,opt){
+    const {verticalPercent,bottomPercent,side,target}=opt;
     const vpx=verticalPercent/100,bpx=bottomPercent/100;
     const sx=side==='left'?img.width*vpx:0;
-    const sw=img.width*(1-vpx);
-    const sh=img.height*(1-bpx);
+    const sw=img.width*(1-vpx),sh=img.height*(1-bpx);
     const c=document.createElement('canvas');
     c.width=sw;c.height=sh;
     const ctx=c.getContext('2d');
     ctx.imageSmoothingQuality='high';
     ctx.drawImage(img,sx,0,sw,sh,0,0,sw,sh);
+
+    if(target!=='none'){
+      aiStatus.innerHTML='<span>🔄</span> جارٍ رفع الجودة بالذكاء الصناعي...';
+      const upscaler=new window.Upscaler({model:'real-esrgan',scale:4});
+      const upscaled=await upscaler.upscale(c);
+      aiStatus.innerHTML='✅ تم رفع الجودة بنجاح!';
+      const upgradedCanvas=document.createElement('canvas');
+      const ctx2=upgradedCanvas.getContext('2d');
+      if(target==='4k'){upgradedCanvas.width=3840;upgradedCanvas.height=2160;}
+      else if(target==='uhd3840'){const ratio=Math.max(3840/upscaled.width,3840/upscaled.height);upgradedCanvas.width=upscaled.width*ratio;upgradedCanvas.height=upscaled.height*ratio;}
+      else{upgradedCanvas.width=upscaled.width;upgradedCanvas.height=upscaled.height;}
+      ctx2.imageSmoothingQuality='high';ctx2.drawImage(upscaled,0,0,upgradedCanvas.width,upgradedCanvas.height);
+      return upgradedCanvas;
+    }
     return c;
   }
 
-  function drawToCanvas(cv,src){
-    const ctx=cv.getContext('2d');
-    const scale=Math.min(1,260/src.width);
-    cv.width=src.width*scale;
-    cv.height=src.height*scale;
-    ctx.clearRect(0,0,cv.width,cv.height);
-    ctx.drawImage(src,0,0,cv.width,cv.height);
-  }
-
-  function createPreview(canvas,name,i){
-    const wrap=document.createElement('div');
-    wrap.className='thumb';
-    const cv=document.createElement('canvas');
-    wrap.appendChild(cv);
-    drawToCanvas(cv,canvas);
-
-    const controls=document.createElement('div');
-    controls.className='controls';
-    controls.innerHTML=`
-      <label>قص عمودي: <input type="range" min="0" max="15" step="0.5" value="2" class="vcut"></label>
-      <label>قص سفلي: <input type="range" min="0" max="20" step="0.5" value="0" class="bcut"></label>
-      <button class="btn save">💾 حفظ الصورة</button>
-    `;
-    wrap.appendChild(controls);
-
-    const vcut=controls.querySelector('.vcut');
-    const bcut=controls.querySelector('.bcut');
-    const saveBtn=controls.querySelector('.save');
-
-    const updateLocal=()=>{
-      const img=previews[i]?.img;
-      if(!img)return;
-      const c=cropImage(img,{
-        verticalPercent:parseFloat(vcut.value),
-        bottomPercent:parseFloat(bcut.value),
-        side:vertSide.value,
-        target:targetSel.value
-      });
-      drawToCanvas(cv,c);
-    };
-    vcut.addEventListener('input',updateLocal);
-    bcut.addEventListener('input',updateLocal);
-
-    saveBtn.addEventListener('click',async()=>{
-      const img=previews[i]?.img;
-      const c=cropImage(img,{
-        verticalPercent:parseFloat(vcut.value),
-        bottomPercent:parseFloat(bcut.value),
-        side:vertSide.value,
-        target:targetSel.value
-      });
-      const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.9));
-      saveAs(blob,`mohamed_hammad${i+1}_4K.jpg`);
-    });
-
-    return wrap;
-  }
-
-  async function updateGlobalPreviews(){
-    if(!files.length)return;
-    previewEl.querySelectorAll('.thumb').forEach(async (wrap,i)=>{
-      const cv=wrap.querySelector('canvas');
-      const img=await loadImage(files[i]);
-      const c=cropImage(img,getGlobalOptions());
-      drawToCanvas(cv,c);
-    });
-  }
-
-  btnProcess.addEventListener('click',()=>{
-    updateGlobalPreviews();
-    status.textContent='✅ تم التنفيذ على الكل';
-  });
-
-  btnDownload.addEventListener('click',async()=>{
-    if(!files.length)return alert('ارفع صور أولاً');
-    for(let i=0;i<files.length;i++){
-      const img=await loadImage(files[i]);
-      const c=cropImage(img,getGlobalOptions());
-      const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.9));
-      saveAs(blob,`mohamed_hammad${i+1}_4K.jpg`);
-      await new Promise(r=>setTimeout(r,300));
-      bar.value=((i+1)/files.length)*100;
-    }
-    status.textContent='✅ تم تنزيل كل الصور بشكل منفصل';
-  });
-
-  btnZip.addEventListener('click',async()=>{
-    if(files.length<2)return alert('زر الملف المضغوط يعمل فقط عند رفع أكثر من صورة واحدة');
-    const zip=new JSZip();
-    for(let i=0;i<files.length;i++){
-      const img=await loadImage(files[i]);
-      const c=cropImage(img,getGlobalOptions());
-      const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.9));
-      zip.file(`mohamed_hammad${i+1}_4K.jpg`,blob);
-      bar.value=((i+1)/files.length)*100;
-      status.textContent=`📦 إضافة ${i+1}/${files.length} للملف المضغوط...`;
-    }
-    const zipBlob=await zip.generateAsync({type:'blob'});
-    saveAs(zipBlob,'mohamed_hammad_images.zip');
-    status.textContent='✅ تم تنزيل الملف المضغوط بنجاح';
-  });
-
-  // === نافذة القسم ===
-  const popup=document.getElementById('popup');
-  const agreeBox=document.getElementById('agreeBox');
-  const agreeBtn=document.getElementById('agreeBtn');
-  if(!localStorage.getItem('agreedToFollow')) popup.classList.add('active');
-  agreeBox.addEventListener('change',()=>agreeBtn.disabled=!agreeBox.checked);
-  agreeBtn.addEventListener('click',()=>{
-    localStorage.setItem('agreedToFollow','true');
-    popup.classList.remove('active');
-  });
+  function drawToCanvas(cv,src){const ctx=cv.getContext('2d');const scale=Math.min(1,260/src.width);
+    cv.width=src.width*scale;cv.height=src.height*scale;ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(src,0,0,cv.width,cv.height);}
 })();
 </script>
 </body>
