@@ -1148,9 +1148,9 @@
           
           try {
             const opts = {
-              verticalPercent: parseFloat(item.vertCut ? item.vertCut.value : el.vertCut.value),
-              bottomPercent: parseFloat(item.bottomCut ? item.bottomCut.value : el.bottomCut.value),
-              topPercent: parseFloat(item.topCut ? item.topCut.value : el.topCut.value),
+              verticalPercent: parseFloat(el.vertCut.value),
+              bottomPercent: parseFloat(el.bottomCut.value),
+              topPercent: parseFloat(el.topCut.value),
               side: el.vertSide.value
             };
             
@@ -1179,9 +1179,9 @@
           
           try {
             const opts = {
-              verticalPercent: parseFloat(item.vertCut ? item.vertCut.value : el.vertCut.value),
-              bottomPercent: parseFloat(item.bottomCut ? item.bottomCut.value : el.bottomCut.value),
-              topPercent: parseFloat(item.topCut ? item.topCut.value : el.topCut.value),
+              verticalPercent: parseFloat(el.vertCut.value),
+              bottomPercent: parseFloat(el.bottomCut.value),
+              topPercent: parseFloat(el.topCut.value),
               side: el.vertSide.value
             };
             
@@ -1325,34 +1325,6 @@
           const controls = document.createElement('div');
           controls.className = 'thumb-controls';
           
-          // Top cut control
-          const topRow = document.createElement('div');
-          topRow.className = 'control-row';
-          topRow.innerHTML = `
-            <label>قص علوي: <span class="top-val">${el.topCut.value}%</span></label>
-            <input type="range" class="top-cut" min="0" max="30" step="0.5" value="${el.topCut.value}">
-          `;
-          
-          // Bottom cut control
-          const bottomRow = document.createElement('div');
-          bottomRow.className = 'control-row';
-          bottomRow.innerHTML = `
-            <label>قص سفلي: <span class="bottom-val">${el.bottomCut.value}%</span></label>
-            <input type="range" class="bottom-cut" min="0" max="30" step="0.5" value="${el.bottomCut.value}">
-          `;
-          
-          // Vertical cut control
-          const vertRow = document.createElement('div');
-          vertRow.className = 'control-row';
-          vertRow.innerHTML = `
-            <label>قص عمودي: <span class="vert-val">${el.vertCut.value}%</span></label>
-            <input type="range" class="vert-cut" min="0" max="30" step="0.5" value="${el.vertCut.value}">
-          `;
-          
-          controls.appendChild(topRow);
-          controls.appendChild(bottomRow);
-          controls.appendChild(vertRow);
-          
           // Stats for individual image
           const stats = document.createElement('div');
           stats.className = 'thumb-stats';
@@ -1381,38 +1353,6 @@
           card.appendChild(canvasContainer);
           card.appendChild(controls);
           
-          // Event listeners for individual controls
-          const topCut = topRow.querySelector('.top-cut');
-          const topVal = topRow.querySelector('.top-val');
-          const bottomCut = bottomRow.querySelector('.bottom-cut');
-          const bottomVal = bottomRow.querySelector('.bottom-val');
-          const vertCut = vertRow.querySelector('.vert-cut');
-          const vertVal = vertRow.querySelector('.vert-val');
-          
-          const updatePreview = () => {
-            if (state.livePreviewEnabled) {
-              imageProcessing.processPreview(idx);
-            }
-          };
-          
-          topCut.addEventListener('input', () => {
-            topVal.textContent = topCut.value + '%';
-            state.items[idx].topCut = topCut;
-            updatePreview();
-          });
-          
-          bottomCut.addEventListener('input', () => {
-            bottomVal.textContent = bottomCut.value + '%';
-            state.items[idx].bottomCut = bottomCut;
-            updatePreview();
-          });
-          
-          vertCut.addEventListener('input', () => {
-            vertVal.textContent = vertCut.value + '%';
-            state.items[idx].vertCut = vertCut;
-            updatePreview();
-          });
-          
           const processBtn = actions.querySelector('.process-btn');
           processBtn.addEventListener('click', () => imageProcessing.processOne(idx));
           
@@ -1439,9 +1379,6 @@
           });
           
           state.items[idx].canvas = canvas;
-          state.items[idx].topCut = topCut;
-          state.items[idx].bottomCut = bottomCut;
-          state.items[idx].vertCut = vertCut;
           state.items[idx].showOriginal = false;
           
           return card;
@@ -1499,9 +1436,6 @@
                 processed: null,
                 processing: false,
                 canvas: null,
-                topCut: null,
-                bottomCut: null,
-                vertCut: null,
                 showOriginal: false
               });
               
