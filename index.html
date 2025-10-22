@@ -16,1703 +16,217 @@
       --error: #ff4757;
       --success: #00e676;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { 
-      background: var(--bg); 
-      color: var(--text); 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-    }
-    header { 
-      padding: 20px; 
-      text-align: center; 
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(135deg, #0f1115 0%, #1a1f2e 100%);
-    }
-    h1 { 
-      margin: 0 0 8px; 
-      color: var(--brand); 
-      font-weight: 700; 
-      font-size: clamp(18px, 4vw, 24px);
-    }
-    .subtitle {
-      color: #9fb0c3;
-      font-size: clamp(12px, 2.5vw, 14px);
-      margin: 8px 0;
-    }
-    main { 
-      max-width: 1200px; 
-      margin: 24px auto; 
-      padding: 0 16px; 
-    }
-    .card { 
-      background: var(--panel); 
-      border: 1px solid var(--border); 
-      border-radius: 16px; 
-      padding: 20px; 
-      margin-bottom: 16px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .card h3 {
-      color: var(--brand);
-      margin-bottom: 12px;
-      font-size: 18px;
-    }
-    
-    /* Drop Zone */
-    #dropZone {
-      border: 3px dashed var(--brand);
-      border-radius: 16px;
-      padding: 60px 20px;
-      text-align: center;
-      background: linear-gradient(135deg, #0c0f14 0%, #151923 100%);
-      cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    #dropZone::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at center, rgba(0, 224, 164, 0.1) 0%, transparent 70%);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    #dropZone:hover::after {
-      opacity: 1;
-    }
-    #dropZone.dragover {
-      background: rgba(0, 224, 164, 0.15);
-      border-color: var(--success);
-      border-style: solid;
-      transform: scale(1.02);
-      box-shadow: 0 0 30px rgba(0, 224, 164, 0.3);
-    }
-    #dropZone.dragover::after {
-      opacity: 1;
-    }
-    .drop-icon {
-      font-size: 64px;
-      display: block;
-      margin-bottom: 16px;
-      animation: float 3s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-    #dropZone.dragover .drop-icon {
-      animation: bounce 0.5s ease infinite;
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-15px); }
-    }
-    .drop-text {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--brand);
-      margin-bottom: 12px;
-    }
-    .drop-hint {
-      font-size: 14px;
-      color: #7a8a9a;
-      margin-bottom: 8px;
-    }
-    .drop-limit {
-      font-size: 12px;
-      color: #5a6a7a;
-      margin-top: 8px;
-    }
-    .file-count {
-      display: inline-block;
-      background: var(--brand);
-      color: #02130e;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 13px;
-      margin-top: 12px;
-    }
-    #picker { display: none; }
-    
-    /* Controls */
-    .control-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 16px;
-      margin-top: 16px;
-    }
-    .control-item label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #b4c7d4;
-    }
-    select, input[type="number"] {
-      width: 100%;
-      background: #0c0f14;
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px;
-      font-size: 14px;
-      transition: border-color 0.3s ease;
-    }
-    select:focus, input[type="number"]:focus {
-      outline: none;
-      border-color: var(--brand);
-    }
-    
-    .range-control {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    input[type="range"] {
-      flex: 1;
-      height: 6px;
-      background: #0c0f14;
-      border-radius: 10px;
-      outline: none;
-      -webkit-appearance: none;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
-      background: var(--brand);
-      border-radius: 50%;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    input[type="range"]::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
-    }
-    input[type="range"]::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
-      background: var(--brand);
-      border-radius: 50%;
-      cursor: pointer;
-      border: none;
-    }
-    .range-value {
-      min-width: 50px;
-      text-align: center;
-      font-weight: 700;
-      color: var(--brand);
-    }
-    
-    /* Buttons */
-    .btn-group {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-    .btn {
-      flex: 1;
-      min-width: 150px;
-      background: var(--brand);
-      color: #02130e;
-      border: 0;
-      border-radius: 12px;
-      padding: 12px 20px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: translate(-50%, -50%);
-      transition: width 0.5s, height 0.5s;
-    }
-    .btn:hover::before {
-      width: 300px;
-      height: 300px;
-    }
-    .btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 224, 164, 0.4);
-    }
-    .btn:active:not(:disabled) {
-      transform: translateY(0);
-    }
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .btn-secondary {
-      background: #2a2f3a;
-      color: var(--text);
-    }
-    .btn-danger {
-      background: var(--error);
-      color: white;
-    }
-    
-    /* Progress */
-    .progress-container {
-      margin: 16px 0;
-    }
-    progress {
-      width: 100%;
-      height: 20px;
-      border-radius: 10px;
-      overflow: hidden;
-      appearance: none;
-      background: #0c0f14;
-      border: 1px solid var(--border);
-    }
-    progress::-webkit-progress-bar {
-      background: #0c0f14;
-      border-radius: 10px;
-    }
-    progress::-webkit-progress-value {
-      background: linear-gradient(90deg, var(--brand), #00b8ff, var(--brand));
-      background-size: 200% 100%;
-      border-radius: 10px;
-      animation: progressAnim 2s linear infinite;
-    }
-    progress::-moz-progress-bar {
-      background: linear-gradient(90deg, var(--brand), #00b8ff, var(--brand));
-      background-size: 200% 100%;
-      border-radius: 10px;
-      animation: progressAnim 2s linear infinite;
-    }
-    @keyframes progressAnim {
-      0% { background-position: 0% 0; }
-      100% { background-position: 200% 0; }
-    }
-    
-    .status-text {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 8px;
-      font-size: 13px;
-      color: #7a8a9a;
-    }
-    .status-text .spin {
-      display: inline-block;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    
-    /* AI Status */
-    #aiStatus {
-      text-align: center;
-      margin: 16px 0;
-      padding: 12px;
-      background: rgba(0, 224, 164, 0.1);
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--brand);
-      min-height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    /* Gallery */
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-      margin-top: 16px;
-    }
-    .gallery.empty::after {
-      content: '📷 لا توجد صور للعرض - قم برفع الصور أولاً';
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 20px;
-      color: #5a6a7a;
-      font-size: 16px;
-    }
-    .thumb-card {
-      background: #0c0f14;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      animation: fadeIn 0.5s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .thumb-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0, 224, 164, 0.2);
-    }
-    .thumb-header {
-      padding: 10px;
-      background: #151923;
-      border-bottom: 1px solid var(--border);
-      font-size: 12px;
-      font-weight: 600;
-      color: #9fb0c3;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .thumb-size {
-      font-size: 11px;
-      color: #7a8a9a;
-    }
-    .thumb-canvas-container {
-      position: relative;
-      width: 100%;
-      padding-top: 75%;
-      background: #000;
-    }
-    .thumb-canvas-container canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-    .comparison-toggle {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0, 224, 164, 0.9);
-      color: #02130e;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      z-index: 10;
-      transition: transform 0.2s ease;
-    }
-    .comparison-toggle:hover {
-      transform: scale(1.05);
-    }
-    .thumb-controls {
-      padding: 12px;
-      background: #0d1118;
-    }
-    .thumb-controls .control-row {
-      margin-bottom: 10px;
-    }
-    .thumb-controls label {
-      font-size: 11px;
-      color: #7a8a9a;
-      display: block;
-      margin-bottom: 4px;
-    }
-    .thumb-controls input[type="range"] {
-      width: 100%;
-      height: 4px;
-    }
-    .thumb-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .thumb-actions .btn {
-      min-width: auto;
-      padding: 8px 12px;
-      font-size: 12px;
-      flex: 1;
-    }
-    
-    /* Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 12px;
-      margin-top: 16px;
-    }
-    .stat-card {
-      background: #0c0f14;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      transition: transform 0.3s ease;
-    }
-    .stat-card:hover {
-      transform: translateY(-2px);
-    }
-    .stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--brand);
-      margin-bottom: 4px;
-    }
-    .stat-label {
-      font-size: 12px;
-      color: #7a8a9a;
-    }
-    
-    /* Toast Notifications */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-      z-index: 10000;
-      transform: translateX(400px);
-      transition: transform 0.3s ease;
-      max-width: 300px;
-    }
-    .toast.show {
-      transform: translateX(0);
-    }
-    .toast.success { border-left: 4px solid var(--success); }
-    .toast.error { border-left: 4px solid var(--error); }
-    .toast.warning { border-left: 4px solid #ffa502; }
-    
-    /* User Counter */
-    #activeUsers {
-      margin-top: 12px;
-      font-size: 16px;
-      color: var(--brand);
-      font-weight: 700;
-    }
-    
-    /* Privacy Note */
-    .privacy-note {
-      margin-top: 12px;
-      padding: 12px;
-      background: rgba(0, 224, 164, 0.1);
-      border-radius: 10px;
-      color: var(--brand);
-      font-size: 13px;
-      font-weight: 600;
-      text-align: center;
-    }
-    
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 24px;
-      color: #7a8a9a;
-      font-size: 14px;
-      border-top: 1px solid var(--border);
-      margin-top: 40px;
-    }
-    footer a {
-      color: var(--brand);
-      text-decoration: none;
-      font-weight: 700;
-      transition: color 0.3s ease;
-    }
-    footer a:hover {
-      color: #00b8ff;
-    }
-    
-    /* Theme Toggle */
-    #themeToggle {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background: var(--brand);
-      color: #02130e;
-      border: none;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      font-size: 22px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 1000;
-      transition: transform 0.3s ease;
-    }
-    #themeToggle:hover {
-      transform: scale(1.1) rotate(20deg);
-    }
-    
-    /* Sound Toggle */
-    #soundToggle {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: var(--brand);
-      color: #02130e;
-      border: none;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      font-size: 22px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 1000;
-      transition: transform 0.3s ease;
-    }
-    #soundToggle:hover {
-      transform: scale(1.1);
-    }
-    
-    /* Light Theme */
-    body.light-theme {
-      --bg: #f5f5f5;
-      --panel: #ffffff;
-      --text: #1a1a1a;
-      --border: #e0e0e0;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      .control-grid {
-        grid-template-columns: 1fr;
-      }
-      .btn-group {
-        flex-direction: column;
-      }
-      .btn {
-        min-width: 100%;
-      }
-      .gallery {
-        grid-template-columns: 1fr;
-      }
-      #themeToggle, #soundToggle {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
-      }
-      .drop-icon {
-        font-size: 48px;
-      }
-      #dropZone {
-        padding: 40px 15px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      main {
-        padding: 0 8px;
-      }
-      .card {
-        padding: 12px;
-        border-radius: 12px;
-      }
-      h1 {
-        font-size: 16px;
-      }
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    /* Live Preview Indicator */
-    .live-preview-indicator {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background: var(--success);
-      border-radius: 50%;
-      margin-right: 8px;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
-    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; }
+    header { padding: 20px; text-align: center; border-bottom: 1px solid var(--border); }
+    h1 { color: var(--brand); margin: 0; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 16px auto; max-width: 1200px; }
+    #dropZone { border: 3px dashed var(--brand); padding: 60px; text-align: center; border-radius: 16px; cursor: pointer; transition: .3s; }
+    #dropZone.dragover { background: rgba(0,224,164,.1); }
+    progress { width: 100%; height: 20px; border-radius: 10px; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 16px; margin-top: 20px; }
+    .thumb-card { background: #0c0f14; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .thumb-canvas-container { position: relative; width: 100%; padding-top: 75%; background: #000; }
+    .thumb-canvas-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .thumb-controls { padding: 10px; background: #151923; }
+    .thumb-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .btn { flex: 1; background: var(--brand); color: #02130e; border: 0; padding: 8px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    .btn-secondary { background: #2a2f3a; color: var(--text); }
+    .range-control { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+    input[type=range] { flex: 1; height: 6px; }
+    .range-value { color: var(--brand); min-width: 40px; text-align: center; font-weight: bold; }
+    .stat-card { text-align: center; margin-top: 10px; background: #0c0f14; border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
+    .stat-value { font-size: 22px; color: var(--brand); }
   </style>
 </head>
 <body>
-  <button id="themeToggle" title="تبديل الوضع">🌙</button>
-  <button id="soundToggle" title="تشغيل/إيقاف الصوت">🔊</button>
-  
-  <header>
-    <h1>🛠️ إزالة الشعار المتقدمة بالذكاء الاصطناعي</h1>
-    <div class="subtitle">معالجة احترافية باستخدام TensorFlow.js + OpenCV.js | تحسين 4K | من مهندس محمد حماد</div>
-    <div id="activeUsers">المستخدمون النشطون: <span id="userCount">...</span></div>
-  </header>
+<header>
+  <h1>🛠️ إزالة الشعار ورفع جودة الصور 4K</h1>
+  <p>معالجة محلية بالكامل - من برمجة المهندس محمد حماد</p>
+</header>
 
-  <main>
-    <!-- Upload Section -->
-    <div class="card">
-      <div id="dropZone">
-        <span class="drop-icon">📤</span>
-        <div class="drop-text">اسحب وأفلت الصور هنا</div>
-        <div class="drop-hint">أو اضغط للاختيار من جهازك</div>
-        <div class="drop-limit">يدعم: JPEG, PNG, WebP | حتى 50 صورة | أقصى حجم لكل صورة: 10MB</div>
-        <div class="file-count" id="fileCount" style="display: none;">
-          <span id="fileCountNum">0</span> صورة محملة
-        </div>
-      </div>
-      <input id="picker" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-      <div class="privacy-note">
-        🔒 خصوصية كاملة - جميع الصور تُعالج محليًا على جهازك ولا تُرسل لأي خادم
-      </div>
-    </div>
+<main class="card">
+  <div id="dropZone">📤 اسحب الصور هنا أو اضغط لاختيارها</div>
+  <input id="picker" type="file" accept="image/*" multiple style="display:none">
+  <progress id="progressBar" value="0" max="100"></progress>
+  <p id="statusText">جاهز</p>
+  <div class="gallery" id="gallery"></div>
+  <div id="stats">
+    <div class="stat-card"><div class="stat-value" id="statImages">0</div><div>صور مرفوعة</div></div>
+    <div class="stat-card"><div class="stat-value" id="statProcessed">0</div><div>تمت معالجتها</div></div>
+  </div>
+</main>
 
-    <!-- AI Detection Methods -->
-    <div class="card">
-      <h3>⚙️ طرق إزالة العلامات المائية بالذكاء الاصطناعي</h3>
-      <div class="control-grid">
-        <div class="control-item">
-          <label>🤖 نموذج الإزالة:</label>
-          <select id="removalMethod">
-            <option value="inpaint">Inpainting AI - ملء ذكي للمناطق المحذوفة</option>
-            <option value="denoise">Denoising - إزالة التشويش والضوضاء</option>
-            <option value="segmentation">Segmentation - كشف وإزالة تلقائية</option>
-            <option value="content-aware">Content-Aware Fill - ملء حسب المحتوى</option>
-            <option value="manual" selected>Manual Crop - القص اليدوي (أسرع)</option>
-          </select>
-        </div>
-        
-        <div class="control-item">
-          <label>✨ وضع التحسين:</label>
-          <select id="enhanceMode">
-            <option value="4k-upscale">4K Upscaling - تحسين الجودة إلى 4K</option>
-            <option value="ai-upscale">AI Upscaling - رفع الجودة 2x</option>
-            <option value="denoise">Noise Reduction - تقليل التشويش</option>
-            <option value="sharpen">Sharpening - زيادة الوضوح</option>
-            <option value="none">بدون تحسين (معاينة سريعة)</option>
-          </select>
-        </div>
-        
-        <div class="control-item">
-          <label>🎨 جودة الإخراج:</label>
-          <select id="outputQuality">
-            <option value="1.0">أقصى جودة (100%)</option>
-            <option value="0.95" selected>جودة عالية جداً (95%)</option>
-            <option value="0.85">جودة عالية (85%)</option>
-            <option value="0.75">جودة متوسطة - حجم أصغر (75%)</option>
-          </select>
-        </div>
+<script>
+(async()=>{
+'use strict';
+const el={dropZone:document.getElementById('dropZone'),
+picker:document.getElementById('picker'),
+gallery:document.getElementById('gallery'),
+progressBar:document.getElementById('progressBar'),
+statusText:document.getElementById('statusText'),
+statImages:document.getElementById('statImages'),
+statProcessed:document.getElementById('statProcessed')};
+const state={items:[],opencvReady:false,sr:null};
 
-        <div class="control-item">
-          <label>📁 صيغة الإخراج:</label>
-          <select id="outputFormat">
-            <option value="jpeg" selected>JPEG (حجم أصغر)</option>
-            <option value="png">PNG (جودة أعلى)</option>
-            <option value="webp">WebP (توازن مثالي)</option>
-          </select>
-        </div>
-      </div>
-    </div>
+// تحميل OpenCV
+function waitForCV(){return new Promise((resolve,reject)=>{
+ let tries=0;const check=setInterval(()=>{if(cv&&cv.getBuildInformation){clearInterval(check);resolve();}else if(tries++>50){clearInterval(check);reject();}},200);
+});}
 
-    <!-- Manual Cropping Controls -->
-    <div class="card">
-      <h3>✂️ التحكم اليدوي بالقص <span class="live-preview-indicator"></span> معاينة مباشرة</h3>
-      <div class="control-grid">
-        <div class="control-item">
-          <label>اتجاه القص العمودي:</label>
-          <select id="vertSide">
-            <option value="right">يمين ←</option>
-            <option value="left">يسار →</option>
-          </select>
-        </div>
-        
-        <div class="control-item">
-          <label>عرض القص العمودي:</label>
-          <div class="range-control">
-            <input id="vertCut" type="range" min="0" max="30" step="0.5" value="2">
-            <span class="range-value"><span id="vertVal">2</span>%</span>
-          </div>
-        </div>
-        
-        <div class="control-item">
-          <label>قص علوي:</label>
-          <div class="range-control">
-            <input id="topCut" type="range" min="0" max="30" step="0.5" value="0">
-            <span class="range-value"><span id="topVal">0</span>%</span>
-          </div>
-        </div>
-        
-        <div class="control-item">
-          <label>قص سفلي:</label>
-          <div class="range-control">
-            <input id="bottomCut" type="range" min="0" max="30" step="0.5" value="0">
-            <span class="range-value"><span id="bottomVal">0</span>%</span>
-          </div>
-        </div>
-      </div>
-    </div>
+// تحميل نموذج ESPCN_x4 من GitHub الخاص بك
+async function loadSuperRes(){
+ state.sr=new cv.dnn.SuperResolution();
+ await state.sr.readModel('https://mohamednasr5.github.io/logo/ESPCN_x4.pb');
+ state.sr.setModel('espcn',4);
+ console.log('✅ تم تحميل نموذج ESPCN_x4 بنجاح');
+}
 
-    <!-- Action Buttons -->
-    <div class="card">
-      <div class="btn-group">
-        <button class="btn" id="btnProcess">🔄 معالجة الكل</button>
-        <button class="btn btn-secondary" id="btnDownload">⬇️ تنزيل الكل</button>
-        <button class="btn btn-secondary" id="btnUndo">↩️ تراجع</button>
-        <button class="btn btn-danger" id="btnClear">🗑️ حذف الكل</button>
-      </div>
-    </div>
+// رفع الجودة إلى 4K فعليًا
+async function upscale4K(canvas){
+ return new Promise(resolve=>{
+  try{
+   const src=cv.imread(canvas);
+   const dst=new cv.Mat();
+   state.sr.upsample(src,dst);
+   const out=document.createElement('canvas');
+   out.width=dst.cols;out.height=dst.rows;
+   cv.imshow(out,dst);
+   src.delete();dst.delete();
+   resolve(out);
+  }catch(e){console.error(e);resolve(canvas);}
+ });
+}
 
-    <!-- Progress -->
-    <div class="card">
-      <div class="progress-container">
-        <progress id="progressBar" max="100" value="0"></progress>
-        <div class="status-text">
-          <span id="statusText">جاهز للاستخدام</span>
-          <span id="statusDetails"></span>
-        </div>
-      </div>
-      <div id="aiStatus">🤖 في انتظار تحميل الصور...</div>
-    </div>
+// قص الصورة
+function cropImage(img,top,bottom){
+ const t=img.height*(top/100),b=img.height*(bottom/100);
+ const h=img.height-t-b;
+ const canvas=document.createElement('canvas');
+ canvas.width=img.width;canvas.height=h;
+ const ctx=canvas.getContext('2d');
+ ctx.drawImage(img,0,t,img.width,h,0,0,img.width,h);
+ return canvas;
+}
 
-    <!-- Statistics -->
-    <div class="card">
-      <h3>📊 الإحصائيات</h3>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value" id="statImages">0</div>
-          <div class="stat-label">صورة محملة</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statProcessed">0</div>
-          <div class="stat-label">تمت معالجتها</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statTime">0s</div>
-          <div class="stat-label">الوقت المستغرق</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statSize">0 MB</div>
-          <div class="stat-label">الحجم الكلي</div>
-        </div>
-      </div>
-    </div>
+// تحديث المعاينة الفورية
+function updatePreview(idx){
+ const item=state.items[idx];if(!item)return;
+ const top=parseFloat(item.topCut.value);
+ const bottom=parseFloat(item.bottomCut.value);
+ const cropped=cropImage(item.img,top,bottom);
+ const ctx=item.canvas.getContext('2d');
+ ctx.clearRect(0,0,item.canvas.width,item.canvas.height);
+ ctx.drawImage(cropped,0,0,item.canvas.width,item.canvas.height);
+}
 
-    <!-- Gallery -->
-    <div class="card">
-      <h3>🖼️ معرض الصور (قبل وبعد)</h3>
-      <div id="gallery" class="gallery empty"></div>
-    </div>
-  </main>
+// معالجة صورة واحدة
+async function processOne(idx){
+ const item=state.items[idx];
+ const top=parseFloat(item.topCut.value);
+ const bottom=parseFloat(item.bottomCut.value);
+ const cropped=cropImage(item.img,top,bottom);
+ const upscaled=await upscale4K(cropped);
+ item.processed=upscaled;
+ const ctx=item.canvas.getContext('2d');
+ ctx.clearRect(0,0,item.canvas.width,item.canvas.height);
+ ctx.drawImage(upscaled,0,0,item.canvas.width,item.canvas.height);
+ el.statProcessed.textContent=parseInt(el.statProcessed.textContent)+1;
+}
 
-  <footer>
-    <p>برمجة وتصميم <strong>المهندس محمد حماد</strong></p>
-    <p>تابعني على: 👉 <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">facebook.com/en.mohamed.nasr</a></p>
-    <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">
-      النسخة 4.0 - مدعومة بـ TensorFlow.js + OpenCV.js + تحسين 4K | جميع الحقوق محفوظة © 2025
-    </p>
-  </footer>
+// معالجة جميع الصور
+async function processAll(){
+ for(let i=0;i<state.items.length;i++){
+  await processOne(i);
+  el.progressBar.value=((i+1)/state.items.length)*100;
+  el.statusText.textContent=`تمت معالجة ${i+1}/${state.items.length}`;
+ }
+ el.statusText.textContent='✅ اكتملت المعالجة';
+}
 
-  <audio id="bgMusic" loop>
-    <source src="https://mohamednasr5.github.io/logo/bg.mp3" type="audio/mpeg">
-  </audio>
+// إنشاء بطاقة لكل صورة
+function createCard(file,img,idx){
+ const card=document.createElement('div');card.className='thumb-card';
+ const cont=document.createElement('div');cont.className='thumb-canvas-container';
+ const canvas=document.createElement('canvas');cont.appendChild(canvas);
+ card.appendChild(cont);
+ const controls=document.createElement('div');controls.className='thumb-controls';
+ controls.innerHTML=`
+ <div class="range-control"><label>قص علوي:</label>
+ <input type="range" min="0" max="30" step="0.5" value="0" class="topCut">
+ <span class="range-value">0%</span></div>
+ <div class="range-control"><label>قص سفلي:</label>
+ <input type="range" min="0" max="30" step="0.5" value="0" class="bottomCut">
+ <span class="range-value">0%</span></div>
+ <div class="thumb-actions">
+ <button class="btn processBtn">🔄 معالجة</button>
+ <button class="btn-secondary saveBtn">💾 حفظ</button>
+ </div>`;
+ card.appendChild(controls);
+ el.gallery.appendChild(card);
 
-  <script>
-    (async () => {
-      'use strict';
+ const topCut=controls.querySelector('.topCut');
+ const bottomCut=controls.querySelector('.bottomCut');
+ const topVal=controls.querySelectorAll('.range-value')[0];
+ const bottomVal=controls.querySelectorAll('.range-value')[1];
+ const processBtn=controls.querySelector('.processBtn');
+ const saveBtn=controls.querySelector('.saveBtn');
 
-      // ==================== Constants ====================
-      const MAX_FILES = 50;
-      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-      const MIME_MAP = {
-        'jpeg': 'image/jpeg',
-        'png': 'image/png',
-        'webp': 'image/webp'
-      };
-      
-      // ==================== State Management ====================
-      const state = {
-        files: [],
-        items: [],
-        processedCount: 0,
-        totalSize: 0,
-        startTime: null,
-        aiModel: null,
-        isMuted: false,
-        history: [],
-        activeUsers: 0,
-        opencvLoaded: false,
-        livePreviewEnabled: true,
-        previewTimeout: null
-      };
+ const ctx=canvas.getContext('2d');
+ const scale=Math.min(1,280/Math.max(img.width,img.height));
+ canvas.width=img.width*scale;canvas.height=img.height*scale;
+ ctx.drawImage(img,0,0,canvas.width,canvas.height);
 
-      // ==================== DOM Elements ====================
-      const el = {
-        dropZone: document.getElementById('dropZone'),
-        picker: document.getElementById('picker'),
-        gallery: document.getElementById('gallery'),
-        progressBar: document.getElementById('progressBar'),
-        statusText: document.getElementById('statusText'),
-        statusDetails: document.getElementById('statusDetails'),
-        aiStatus: document.getElementById('aiStatus'),
-        userCount: document.getElementById('userCount'),
-        bgMusic: document.getElementById('bgMusic'),
-        soundToggle: document.getElementById('soundToggle'),
-        themeToggle: document.getElementById('themeToggle'),
-        fileCount: document.getElementById('fileCount'),
-        fileCountNum: document.getElementById('fileCountNum'),
-        
-        // Controls
-        removalMethod: document.getElementById('removalMethod'),
-        enhanceMode: document.getElementById('enhanceMode'),
-        outputQuality: document.getElementById('outputQuality'),
-        outputFormat: document.getElementById('outputFormat'),
-        vertSide: document.getElementById('vertSide'),
-        vertCut: document.getElementById('vertCut'),
-        topCut: document.getElementById('topCut'),
-        bottomCut: document.getElementById('bottomCut'),
-        vertVal: document.getElementById('vertVal'),
-        topVal: document.getElementById('topVal'),
-        bottomVal: document.getElementById('bottomVal'),
-        
-        // Buttons
-        btnProcess: document.getElementById('btnProcess'),
-        btnDownload: document.getElementById('btnDownload'),
-        btnUndo: document.getElementById('btnUndo'),
-        btnClear: document.getElementById('btnClear'),
-        
-        // Stats
-        statImages: document.getElementById('statImages'),
-        statProcessed: document.getElementById('statProcessed'),
-        statTime: document.getElementById('statTime'),
-        statSize: document.getElementById('statSize')
-      };
+ topCut.oninput=()=>{topVal.textContent=topCut.value+'%';updatePreview(idx);};
+ bottomCut.oninput=()=>{bottomVal.textContent=bottomCut.value+'%';updatePreview(idx);};
 
-      // ==================== Utility Functions ====================
-      const utils = {
-        clamp: (val, min, max) => Math.max(min, Math.min(max, val)),
-        
-        formatBytes: (bytes) => {
-          if (bytes === 0) return '0 B';
-          const k = 1024;
-          const sizes = ['B', 'KB', 'MB', 'GB'];
-          const i = Math.floor(Math.log(bytes) / Math.log(k));
-          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        },
-        
-        formatTime: (seconds) => {
-          if (seconds < 60) return `${seconds.toFixed(1)}s`;
-          const mins = Math.floor(seconds / 60);
-          const secs = Math.floor(seconds % 60);
-          return `${mins}m ${secs}s`;
-        },
-        
-        showToast: (message, type = 'success') => {
-          const toast = document.createElement('div');
-          toast.className = `toast ${type}`;
-          toast.textContent = message;
-          document.body.appendChild(toast);
-          setTimeout(() => toast.classList.add('show'), 100);
-          setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-          }, 3000);
-        },
-        
-        validateFile: (file) => {
-          if (!ALLOWED_TYPES.includes(file.type)) {
-            throw new Error(`نوع الملف ${file.name} غير مدعوم`);
-          }
-          if (file.size > MAX_FILE_SIZE) {
-            throw new Error(`حجم الملف ${file.name} كبير جداً (أكثر من ${utils.formatBytes(MAX_FILE_SIZE)})`);
-          }
-          return true;
-        },
-        
-        loadImage: (file) => {
-          return new Promise((resolve, reject) => {
-            const img = new Image();
-            const url = URL.createObjectURL(file);
-            img.onload = () => {
-              URL.revokeObjectURL(url);
-              resolve(img);
-            };
-            img.onerror = () => {
-              URL.revokeObjectURL(url);
-              reject(new Error(`فشل تحميل الصورة ${file.name}`));
-            };
-            img.src = url;
-          });
-        }
-      };
+ processBtn.onclick=()=>processOne(idx);
+ saveBtn.onclick=()=>{
+  const quality=0.95;
+  item.processed.toBlob(b=>{
+   const link=document.createElement('a');
+   link.href=URL.createObjectURL(b);
+   link.download=`mohamed_hammad(${idx+1}).jpg`;
+   link.click();
+  },'image/jpeg',quality);
+ };
 
-      // ==================== OpenCV Integration ====================
-      const opencvProcessor = {
-        init: () => {
-          return new Promise((resolve, reject) => {
-            if (cv.getBuildInformation) {
-              state.opencvLoaded = true;
-              console.log('✅ OpenCV.js loaded successfully');
-              resolve();
-              return;
-            }
-            
-            // Wait for OpenCV to load
-            const checkOpenCV = setInterval(() => {
-              if (cv.getBuildInformation) {
-                clearInterval(checkOpenCV);
-                state.opencvLoaded = true;
-                console.log('✅ OpenCV.js loaded successfully');
-                resolve();
-              }
-            }, 100);
-            
-            // Timeout after 10 seconds
-            setTimeout(() => {
-              clearInterval(checkOpenCV);
-              reject(new Error('فشل تحميل OpenCV.js'));
-            }, 10000);
-          });
-        },
+ state.items[idx]={img,canvas,topCut,bottomCut,processed:null};
+}
 
-        // 4K Upscaling using advanced algorithms
-        upscaleTo4K: (canvas) => {
-          return new Promise((resolve) => {
-            if (!state.opencvLoaded) {
-              resolve(canvas);
-              return;
-            }
+// تحميل الصور
+async function handleFiles(files){
+ el.statusText.textContent='📥 جارٍ تحميل الصور...';
+ el.progressBar.value=0;
+ el.statImages.textContent=files.length;
+ for(let i=0;i<files.length;i++){
+  const f=files[i];
+  const img=new Image();
+  img.src=URL.createObjectURL(f);
+  await new Promise(r=>img.onload=r);
+  createCard(f,img,i);
+  el.progressBar.value=((i+1)/files.length)*100;
+  await processOne(i); // تطبيق 4K تلقائي فور الرفع
+ }
+ el.statusText.textContent='✅ تم تحميل ومعالجة الصور';
+}
 
-            try {
-              const src = cv.imread(canvas);
-              const dst = new cv.Mat();
-              
-              // Calculate target size for 4K (3840x2160) while maintaining aspect ratio
-              const targetWidth = 3840;
-              const targetHeight = 2160;
-              
-              const scaleX = targetWidth / src.cols;
-              const scaleY = targetHeight / src.rows;
-              const scale = Math.min(scaleX, scaleY);
-              
-              const newWidth = Math.round(src.cols * scale);
-              const newHeight = Math.round(src.rows * scale);
-              
-              // Use high-quality interpolation for upscaling
-              cv.resize(src, dst, new cv.Size(newWidth, newHeight), 0, 0, cv.INTER_LANCZOS4);
-              
-              // Apply advanced sharpening for 4K quality
-              const sharpened = new cv.Mat();
-              const kernel = new cv.Mat(5, 5, cv.CV_32FC1);
-              
-              // Create advanced sharpening kernel
-              const kernelData = new Float32Array([
-                -0.5, -1, -1, -1, -0.5,
-                -1,   2,  4,  2, -1,
-                -1,   4,  8,  4, -1,
-                -1,   2,  4,  2, -1,
-                -0.5, -1, -1, -1, -0.5
-              ]);
-              
-              kernelData.forEach((val, i) => kernel.data32F[i] = val / 8);
-              cv.filter2D(dst, sharpened, -1, kernel);
-              
-              // Apply bilateral filter for noise reduction while preserving edges
-              const final = new cv.Mat();
-              cv.bilateralFilter(sharpened, final, 9, 75, 75);
-              
-              const output = document.createElement('canvas');
-              output.width = newWidth;
-              output.height = newHeight;
-              cv.imshow(output, final);
-              
-              // Clean up
-              src.delete();
-              dst.delete();
-              sharpened.delete();
-              final.delete();
-              kernel.delete();
-              
-              resolve(output);
-            } catch (error) {
-              console.error('4K upscaling error:', error);
-              resolve(canvas);
-            }
-          });
-        },
+// تهيئة السحب والإفلات
+['dragenter','dragover','dragleave','drop'].forEach(ev=>{
+ el.dropZone.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();});
+});
+el.dropZone.addEventListener('drop',e=>{
+ const files=[...e.dataTransfer.files].filter(f=>f.type.startsWith('image/'));
+ handleFiles(files);
+});
+el.dropZone.onclick=()=>el.picker.click();
+el.picker.onchange=()=>handleFiles([...el.picker.files]);
 
-        // Advanced image enhancement
-        enhanceImage: (canvas, mode) => {
-          return new Promise((resolve) => {
-            if (!state.opencvLoaded) {
-              resolve(canvas);
-              return;
-            }
-
-            try {
-              const src = cv.imread(canvas);
-              const dst = new cv.Mat();
-              
-              switch(mode) {
-                case '4k-upscale':
-                  return opencvProcessor.upscaleTo4K(canvas).then(resolve);
-                  
-                case 'ai-upscale':
-                  // AI-like upscaling using advanced interpolation
-                  cv.resize(src, dst, new cv.Size(canvas.width * 2, canvas.height * 2), 0, 0, cv.INTER_CUBIC);
-                  cv.resize(dst, dst, new cv.Size(canvas.width, canvas.height), 0, 0, cv.INTER_AREA);
-                  break;
-                  
-                case 'denoise':
-                  // Advanced noise reduction
-                  cv.fastNlMeansDenoisingColored(src, dst, 10, 10, 7, 21);
-                  break;
-                  
-                case 'sharpen':
-                  // Advanced sharpening
-                  const kernel = new cv.Mat(3, 3, cv.CV_32FC1);
-                  kernel.data32F.set([0, -1, 0, -1, 5, -1, 0, -1, 0]);
-                  cv.filter2D(src, dst, -1, kernel);
-                  kernel.delete();
-                  break;
-                  
-                default:
-                  cv.copyTo(src, dst);
-                  break;
-              }
-              
-              const output = document.createElement('canvas');
-              output.width = canvas.width;
-              output.height = canvas.height;
-              cv.imshow(output, dst);
-              
-              src.delete();
-              dst.delete();
-              
-              resolve(output);
-            } catch (error) {
-              console.error('OpenCV enhancement error:', error);
-              resolve(canvas);
-            }
-          });
-        }
-      };
-
-      // ==================== Image Processing ====================
-      const imageProcessing = {
-        cropImage: (img, opts) => {
-          const { verticalPercent = 0, bottomPercent = 0, topPercent = 0, side = 'right' } = opts;
-          
-          const vpx = utils.clamp(verticalPercent / 100, 0, 0.95);
-          const bpx = utils.clamp(bottomPercent / 100, 0, 0.95);
-          const tpx = utils.clamp(topPercent / 100, 0, 0.95);
-          
-          const sx = side === 'left' ? img.width * vpx : 0;
-          const sy = img.height * tpx;
-          const sw = img.width * (1 - vpx);
-          const sh = img.height * (1 - bpx - tpx);
-          
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.max(1, Math.round(sw));
-          canvas.height = Math.max(1, Math.round(sh));
-          
-          const ctx = canvas.getContext('2d', { alpha: false });
-          ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-          
-          return canvas;
-        },
-        
-        // Live preview processing (fast, low quality)
-        processPreview: (idx) => {
-          const item = state.items[idx];
-          if (!item || item.processing) return;
-          
-          try {
-            const opts = {
-              verticalPercent: parseFloat(el.vertCut.value),
-              bottomPercent: parseFloat(el.bottomCut.value),
-              topPercent: parseFloat(el.topCut.value),
-              side: el.vertSide.value
-            };
-            
-            const preview = imageProcessing.cropImage(item.img, opts);
-            
-            // Update preview immediately
-            const canvas = item.canvas;
-            const scale = Math.min(1, 260 / Math.max(preview.width, preview.height));
-            canvas.width = Math.max(1, Math.round(preview.width * scale));
-            canvas.height = Math.max(1, Math.round(preview.height * scale));
-            
-            const ctx = canvas.getContext('2d', { alpha: false });
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(preview, 0, 0, canvas.width, canvas.height);
-            
-          } catch (error) {
-            console.error('Preview error:', error);
-          }
-        },
-        
-        processOne: async (idx) => {
-          const item = state.items[idx];
-          if (!item || item.processing) return;
-          
-          item.processing = true;
-          
-          try {
-            const opts = {
-              verticalPercent: parseFloat(item.vertCut ? item.vertCut.value : el.vertCut.value),
-              bottomPercent: parseFloat(item.bottomCut ? item.bottomCut.value : el.bottomCut.value),
-              topPercent: parseFloat(el.topCut.value),
-              side: el.vertSide.value
-            };
-            
-            const cropped = imageProcessing.cropImage(item.img, opts);
-            
-            // Apply OpenCV enhancement if available
-            if (state.opencvLoaded && el.enhanceMode.value !== 'none') {
-              item.processed = await opencvProcessor.enhanceImage(cropped, el.enhanceMode.value);
-            } else {
-              item.processed = cropped;
-            }
-            
-            // Update preview
-            imageProcessing.updateThumbPreview(idx);
-            
-          } catch (error) {
-            console.error(`خطأ في معالجة الصورة ${idx + 1}:`, error);
-            utils.showToast(`فشلت معالجة الصورة ${idx + 1}`, 'error');
-          } finally {
-            item.processing = false;
-          }
-        },
-        
-        updateThumbPreview: (idx) => {
-          const item = state.items[idx];
-          if (!item || !item.canvas || !item.processed) return;
-          
-          const canvas = item.canvas;
-          const src = item.showOriginal ? item.img : item.processed;
-          
-          const scale = Math.min(1, 260 / Math.max(src.width, src.height));
-          canvas.width = Math.max(1, Math.round(src.width * scale));
-          canvas.height = Math.max(1, Math.round(src.height * scale));
-          
-          const ctx = canvas.getContext('2d', { alpha: false });
-          ctx.imageSmoothingQuality = 'high';
-          
-          if (src instanceof HTMLImageElement) {
-            ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
-          } else {
-            ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
-          }
-        },
-        
-        processAll: async () => {
-          if (state.items.length === 0) {
-            utils.showToast('لا توجد صور للمعالجة', 'warning');
-            return;
-          }
-          
-          el.aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ معالجة جميع الصور...';
-          ui.disableActions(true);
-          
-          state.startTime = Date.now();
-          el.progressBar.value = 0;
-          state.processedCount = 0;
-          
-          for (let i = 0; i < state.items.length; i++) {
-            await imageProcessing.processOne(i);
-            state.processedCount++;
-            
-            el.progressBar.value = (state.processedCount / state.items.length) * 100;
-            el.statusText.textContent = `⚙️ تمت معالجة ${state.processedCount}/${state.items.length}`;
-            el.statProcessed.textContent = state.processedCount;
-            
-            const elapsed = (Date.now() - state.startTime) / 1000;
-            el.statTime.textContent = utils.formatTime(elapsed);
-          }
-          
-          el.aiStatus.textContent = '✅ اكتملت معالجة جميع الصور';
-          el.statusText.textContent = '✅ تمت المعالجة بنجاح';
-          ui.disableActions(false);
-          utils.showToast('تمت معالجة جميع الصور بنجاح! 🎉', 'success');
-        }
-      };
-
-      // ==================== Live Preview Management ====================
-      const livePreview = {
-        init: () => {
-          // Add event listeners for live preview
-          const controls = [el.vertCut, el.topCut, el.bottomCut, el.vertSide];
-          
-          controls.forEach(control => {
-            control.addEventListener('input', () => {
-              if (state.livePreviewEnabled && state.items.length > 0) {
-                livePreview.updateAllPreviews();
-              }
-            });
-          });
-        },
-        
-        updateAllPreviews: () => {
-          // Clear previous timeout
-          if (state.previewTimeout) {
-            clearTimeout(state.previewTimeout);
-          }
-          
-          // Debounce preview updates
-          state.previewTimeout = setTimeout(() => {
-            state.items.forEach((_, idx) => {
-              imageProcessing.processPreview(idx);
-            });
-          }, 100);
-        },
-        
-        toggle: (enabled) => {
-          state.livePreviewEnabled = enabled;
-          if (enabled) {
-            livePreview.updateAllPreviews();
-          }
-        }
-      };
-
-      // ==================== UI Management ====================
-      const ui = {
-        disableActions: (disabled) => {
-          [el.btnProcess, el.btnDownload, el.btnUndo, el.btnClear].forEach(btn => {
-            btn.disabled = disabled;
-          });
-        },
-        
-        createThumbCard: (file, idx) => {
-          const card = document.createElement('div');
-          card.className = 'thumb-card';
-          
-          const header = document.createElement('div');
-          header.className = 'thumb-header';
-          header.innerHTML = `
-            <span>📷 ${file.name}</span>
-            <span class="thumb-size">${utils.formatBytes(file.size)}</span>
-          `;
-          
-          const canvasContainer = document.createElement('div');
-          canvasContainer.className = 'thumb-canvas-container';
-          
-          const canvas = document.createElement('canvas');
-          canvasContainer.appendChild(canvas);
-          
-          const compareBtn = document.createElement('button');
-          compareBtn.className = 'comparison-toggle';
-          compareBtn.textContent = '👁️ قبل';
-          compareBtn.addEventListener('click', () => {
-            const item = state.items[idx];
-            item.showOriginal = !item.showOriginal;
-            compareBtn.textContent = item.showOriginal ? '👁️ بعد' : '👁️ قبل';
-            imageProcessing.updateThumbPreview(idx);
-          });
-          canvasContainer.appendChild(compareBtn);
-          
-          const controls = document.createElement('div');
-          controls.className = 'thumb-controls';
-          
-          const vertRow = document.createElement('div');
-          vertRow.className = 'control-row';
-          vertRow.innerHTML = `
-            <label>قص عمودي: <span class="vert-val">${el.vertCut.value}%</span></label>
-            <input type="range" class="vert-cut" min="0" max="30" step="0.5" value="${el.vertCut.value}">
-          `;
-          
-          const bottomRow = document.createElement('div');
-          bottomRow.className = 'control-row';
-          bottomRow.innerHTML = `
-            <label>قص سفلي: <span class="bottom-val">${el.bottomCut.value}%</span></label>
-            <input type="range" class="bottom-cut" min="0" max="30" step="0.5" value="${el.bottomCut.value}">
-          `;
-          
-          controls.appendChild(vertRow);
-          controls.appendChild(bottomRow);
-          
-          const actions = document.createElement('div');
-          actions.className = 'thumb-actions';
-          actions.innerHTML = `
-            <button class="btn process-btn">🔄 معالجة</button>
-            <button class="btn btn-secondary save-btn">💾 حفظ</button>
-          `;
-          controls.appendChild(actions);
-          
-          card.appendChild(header);
-          card.appendChild(canvasContainer);
-          card.appendChild(controls);
-          
-          // Event listeners for individual controls
-          const vertCut = vertRow.querySelector('.vert-cut');
-          const vertVal = vertRow.querySelector('.vert-val');
-          const bottomCut = bottomRow.querySelector('.bottom-cut');
-          const bottomVal = bottomRow.querySelector('.bottom-val');
-          
-          vertCut.addEventListener('input', () => {
-            vertVal.textContent = vertCut.value + '%';
-            state.items[idx].vertCut = vertCut;
-            if (state.livePreviewEnabled) {
-              imageProcessing.processPreview(idx);
-            }
-          });
-          
-          bottomCut.addEventListener('input', () => {
-            bottomVal.textContent = bottomCut.value + '%';
-            state.items[idx].bottomCut = bottomCut;
-            if (state.livePreviewEnabled) {
-              imageProcessing.processPreview(idx);
-            }
-          });
-          
-          const processBtn = actions.querySelector('.process-btn');
-          processBtn.addEventListener('click', () => imageProcessing.processOne(idx));
-          
-          const saveBtn = actions.querySelector('.save-btn');
-          saveBtn.addEventListener('click', () => {
-            const item = state.items[idx];
-            if (!item.processed) {
-              utils.showToast('يجب معالجة الصورة أولاً', 'warning');
-              return;
-            }
-            
-            const quality = parseFloat(el.outputQuality.value);
-            const format = el.outputFormat.value;
-            const mimeType = MIME_MAP[format];
-            
-            item.processed.toBlob(blob => {
-              const link = document.createElement('a');
-              link.download = `mohamedhammad (${idx + 1}).${format}`;
-              link.href = URL.createObjectURL(blob);
-              link.click();
-              URL.revokeObjectURL(link.href);
-              utils.showToast(`تم حفظ mohamedhammad (${idx + 1})`, 'success');
-            }, mimeType, quality);
-          });
-          
-          state.items[idx].canvas = canvas;
-          state.items[idx].vertCut = vertCut;
-          state.items[idx].bottomCut = bottomCut;
-          state.items[idx].showOriginal = false;
-          
-          return card;
-        },
-        
-        updateStats: () => {
-          el.statImages.textContent = state.items.length;
-          el.statSize.textContent = utils.formatBytes(state.totalSize);
-        }
-      };
-
-      // ==================== File Handling ====================
-      const fileHandler = {
-        handleFiles: async (files) => {
-          const validFiles = [];
-          const errors = [];
-          
-          // Validate files
-          for (const file of files) {
-            try {
-              utils.validateFile(file);
-              validFiles.push(file);
-            } catch (error) {
-              errors.push(error.message);
-            }
-          }
-          
-          if (errors.length > 0) {
-            utils.showToast(`تم تجاهل ${errors.length} ملف غير صالح`, 'warning');
-          }
-          
-          if (validFiles.length === 0) {
-            utils.showToast('لم يتم اختيار صور صالحة', 'error');
-            return;
-          }
-          
-          // Limit to MAX_FILES
-          const filesToProcess = validFiles.slice(0, MAX_FILES);
-          if (validFiles.length > MAX_FILES) {
-            utils.showToast(`تم تحميل أول ${MAX_FILES} صورة فقط`, 'warning');
-          }
-          
-          // Update UI
-          el.statusText.textContent = `📥 جارٍ تحميل ${filesToProcess.length} صورة...`;
-          el.aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ تحميل الصور...';
-          
-          // Calculate total size
-          state.totalSize = filesToProcess.reduce((sum, f) => sum + f.size, 0);
-          
-          // Load images
-          for (let i = 0; i < filesToProcess.length; i++) {
-            const file = filesToProcess[i];
-            
-            try {
-              const img = await utils.loadImage(file);
-              
-              state.items.push({
-                file,
-                img,
-                processed: null,
-                processing: false,
-                canvas: null,
-                vertCut: null,
-                bottomCut: null,
-                showOriginal: false
-              });
-              
-              const card = ui.createThumbCard(file, state.items.length - 1);
-              el.gallery.appendChild(card);
-              
-              // Initial preview
-              imageProcessing.processPreview(state.items.length - 1);
-              
-              el.progressBar.value = ((i + 1) / filesToProcess.length) * 100;
-              el.statusDetails.textContent = `${i + 1}/${filesToProcess.length}`;
-              
-            } catch (error) {
-              console.error('فشل تحميل الصورة:', error);
-              utils.showToast(`فشل تحميل ${file.name}`, 'error');
-            }
-          }
-          
-          // Update gallery class
-          if (state.items.length > 0) {
-            el.gallery.classList.remove('empty');
-          }
-          
-          // Update file count
-          el.fileCount.style.display = 'inline-block';
-          el.fileCountNum.textContent = state.items.length;
-          
-          // Update stats
-          ui.updateStats();
-          
-          // Update status
-          el.progressBar.value = 100;
-          el.statusText.textContent = `✅ تم تحميل ${state.items.length} صورة`;
-          el.aiStatus.textContent = `✅ جاهز للمعالجة - ${state.items.length} صورة محملة`;
-          
-          utils.showToast(`تم تحميل ${state.items.length} صورة بنجاح! 🎉`, 'success');
-        }
-      };
-
-      // ==================== Drag & Drop ====================
-      const dragDrop = {
-        init: () => {
-          // Prevent default drag behaviors
-          ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            el.dropZone.addEventListener(eventName, (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            });
-          });
-          
-          // Highlight drop zone when dragging over
-          ['dragenter', 'dragover'].forEach(eventName => {
-            el.dropZone.addEventListener(eventName, () => {
-              el.dropZone.classList.add('dragover');
-            });
-          });
-          
-          ['dragleave', 'drop'].forEach(eventName => {
-            el.dropZone.addEventListener(eventName, () => {
-              el.dropZone.classList.remove('dragover');
-            });
-          });
-          
-          // Handle dropped files
-          el.dropZone.addEventListener('drop', (e) => {
-            const files = Array.from(e.dataTransfer.files).filter(f => 
-              ALLOWED_TYPES.includes(f.type)
-            );
-            
-            if (files.length > 0) {
-              fileHandler.handleFiles(files);
-            } else {
-              utils.showToast('لم يتم العثور على صور صالحة', 'warning');
-            }
-          });
-          
-          // Click to select files
-          el.dropZone.addEventListener('click', () => {
-            el.picker.click();
-          });
-          
-          // Handle file input change
-          el.picker.addEventListener('change', () => {
-            const files = Array.from(el.picker.files);
-            if (files.length > 0) {
-              fileHandler.handleFiles(files);
-            }
-          });
-        }
-      };
-
-      // ==================== Audio Management ====================
-      const audio = {
-        init: () => {
-          el.bgMusic.volume = 0.3;
-          
-          document.addEventListener('click', () => {
-            if (el.bgMusic.paused && !state.isMuted) {
-              el.bgMusic.play().catch(() => {});
-            }
-          }, { once: true });
-          
-          el.soundToggle.addEventListener('click', () => {
-            state.isMuted = !state.isMuted;
-            el.bgMusic.muted = state.isMuted;
-            el.soundToggle.textContent = state.isMuted ? '🔇' : '🔊';
-            
-            if (!state.isMuted) {
-              el.bgMusic.play().catch(() => {});
-            } else {
-              el.bgMusic.pause();
-            }
-          });
-        }
-      };
-
-      // ==================== Theme Toggle ====================
-      const theme = {
-        init: () => {
-          el.themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-theme');
-            const isLight = document.body.classList.contains('light-theme');
-            el.themeToggle.textContent = isLight ? '☀️' : '🌙';
-          });
-        }
-      };
-
-      // ==================== User Counter ====================
-      const userCounter = {
-        init: async () => {
-          try {
-            // Simulate active users count
-            let count = Math.floor(Math.random() * (6254 - 1052 + 1)) + 1052;
-            el.userCount.textContent = count.toLocaleString('ar-EG');
-            
-            setInterval(() => {
-              const change = Math.floor(Math.random() * 10) - 5;
-              count = Math.max(1052, Math.min(6254, count + change));
-              el.userCount.textContent = count.toLocaleString('ar-EG');
-            }, 5000);
-          } catch (e) {
-            // Fallback
-            el.userCount.textContent = '1,234';
-          }
-        }
-      };
-
-      // ==================== Range Sync ====================
-      const rangeSync = {
-        init: () => {
-          const syncRange = (range, display, onChange) => {
-            range.addEventListener('input', () => {
-              display.textContent = range.value;
-              if (onChange) onChange();
-            });
-          };
-          
-          syncRange(el.vertCut, el.vertVal);
-          syncRange(el.topCut, el.topVal);
-          syncRange(el.bottomCut, el.bottomVal);
-        }
-      };
-
-      // ==================== Button Actions ====================
-      const buttons = {
-        init: () => {
-          el.btnProcess.addEventListener('click', imageProcessing.processAll);
-          
-          el.btnDownload.addEventListener('click', async () => {
-            if (state.items.length === 0) {
-              utils.showToast('لا توجد صور للتنزيل', 'warning');
-              return;
-            }
-            
-            const quality = parseFloat(el.outputQuality.value);
-            const format = el.outputFormat.value;
-            const mimeType = MIME_MAP[format];
-            
-            for (let i = 0; i < state.items.length; i++) {
-              const item = state.items[i];
-              
-              if (!item.processed) {
-                await imageProcessing.processOne(i);
-              }
-              
-              if (item.processed) {
-                item.processed.toBlob(blob => {
-                  const link = document.createElement('a');
-                  link.download = `mohamedhammad (${i + 1}).${format}`;
-                  link.href = URL.createObjectURL(blob);
-                  link.click();
-                  URL.revokeObjectURL(link.href);
-                }, mimeType, quality);
-                
-                await new Promise(resolve => setTimeout(resolve, 100));
-              }
-            }
-            
-            utils.showToast('تم تنزيل جميع الصور باسم mohamedhammad! 🎉', 'success');
-          });
-          
-          el.btnClear.addEventListener('click', () => {
-            if (state.items.length === 0) return;
-            
-            if (confirm('هل تريد حذف جميع الصور؟')) {
-              state.items = [];
-              state.processedCount = 0;
-              state.totalSize = 0;
-              el.gallery.innerHTML = '';
-              el.gallery.classList.add('empty');
-              el.fileCount.style.display = 'none';
-              el.progressBar.value = 0;
-              el.statusText.textContent = 'جاهز للاستخدام';
-              el.aiStatus.textContent = '🤖 في انتظار تحميل الصور...';
-              ui.updateStats();
-              utils.showToast('تم حذف جميع الصور', 'success');
-            }
-          });
-          
-          el.btnUndo.addEventListener('click', () => {
-            utils.showToast('ميزة التراجع قيد التطوير', 'warning');
-          });
-        }
-      };
-
-      // ==================== Initialize App ====================
-      const init = async () => {
-        console.log('🚀 تهيئة التطبيق...');
-        
-        // Initialize OpenCV first
-        try {
-          await opencvProcessor.init();
-          el.aiStatus.textContent = '✅ تم تحميل TensorFlow.js + OpenCV.js';
-        } catch (error) {
-          console.warn('OpenCV failed to load, using fallback methods:', error);
-          el.aiStatus.textContent = '⚠️ OpenCV.js غير متوفر - استخدام الطرق البديلة';
-        }
-        
-        dragDrop.init();
-        audio.init();
-        theme.init();
-        userCounter.init();
-        rangeSync.init();
-        buttons.init();
-        livePreview.init();
-        
-        el.aiStatus.textContent = '✅ جاهز للاستخدام - قم برفع الصور';
-        
-        console.log('✅ تم تهيئة التطبيق بنجاح');
-      };
-
-      // Start the application
-      init();
-      
-    })();
-  </script>
+// بدء التشغيل
+await waitForCV();
+await loadSuperRes();
+state.opencvReady=true;
+el.statusText.textContent='✅ جاهز للاستخدام';
+})();
+</script>
 </body>
 </html>
