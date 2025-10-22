@@ -976,71 +976,69 @@
         }
       };
 
-      // ==================== ESPCN Model Integration ====================
-      const espcnProcessor = {
-        init: async () => {
-          try {
-            utils.updateProgress(10, '🔄 جارٍ تحميل نموذج ESPCN...');
-            el.aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ تحميل نموذج ESPCN للتحسين 4K...';
-            
-            // Load ESPCN model
-state.sr = new cv.dnn.SuperResolution();
-await state.sr.readModel('https://raw.githubusercontent.com/mohamednasr5/logo/e3cdbfe8b47d597eedc51b1678f7d197f047a57e/ESPCN_x4.pb');
-state.sr.setModel('espcn', 4);
-            
-            utils.updateProgress(100, '✅ تم تحميل نموذج ESPCN');
-            el.aiStatus.textContent = '✅ تم تحميل نموذج ESPCN للتحسين 4K';
-            console.log('✅ ESPCN model loaded successfully');
-            return true;
-          } catch (error) {
-            console.error('فشل تحميل نموذج ESPCN:', error);
-            el.aiStatus.textContent = '⚠️ فشل تحميل ESPCN - استخدام الطرق البديلة';
-            utils.showToast('فشل تحميل نموذج ESPCN، استخدام الطرق التقليدية', 'warning');
-            return false;
-          }
-        },
+     // ==================== ESPCN Model Integration ====================
+const espcnProcessor = {
+  init: async () => {
+    try {
+      utils.updateProgress(10, '🔄 جارٍ تحميل نموذج ESPCN...');
+      el.aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ تحميل نموذج ESPCN للتحسين 4K...';
 
-        // 4K Upscaling using ESPCN
-        upscaleTo4K: async (canvas) => {
-          if (!state.espcnModel) {
-            return canvas;
-          }
+      // ✅ تحميل نموذج ESPCN بالطريقة الصحيحة عبر OpenCV
+      function waitForCV() {
+        return new Promise((resolve, reject) => {
+          const check = setInterval(() => {
+            if (cv && cv.getBuildInformation) {
+              clearInterval(check);
+              resolve();
+            }
+          }, 200);
+          setTimeout(() => reject('❌ فشل تحميل مكتبة OpenCV.js'), 10000);
+        });
+      }
 
-          try {
-            // Convert canvas to tensor
-            const tensor = tf.browser.fromPixels(canvas)
-              .resizeNearestNeighbor([canvas.height, canvas.width])
-              .toFloat()
-              .div(255.0)
-              .expandDims(0);
+      await waitForCV();
 
-            // Run ESPCN model
-            const prediction = state.espcnModel.predict(tensor);
-            
-            // Convert back to canvas
-            const upscaled = await tf.browser.toPixels(
-              prediction.squeeze().mul(255).cast('int32')
-            );
-            
-            // Create output canvas
-            const output = document.createElement('canvas');
-            output.width = canvas.width * 4;
-            output.height = canvas.height * 4;
-            const ctx = output.getContext('2d');
-            const imageData = new ImageData(upscaled, output.width, output.height);
-            ctx.putImageData(imageData, 0, 0);
-            
-            // Clean up tensors
-            tensor.dispose();
-            prediction.dispose();
-            
-            return output;
-          } catch (error) {
-            console.error('ESPCN upscaling error:', error);
-            return canvas;
-          }
-        }
-      };
+      state.sr = new cv.dnn.SuperResolution();
+      await state.sr.readModel('https://raw.githubusercontent.com/mohamednasr5/logo/e3cdbfe8b47d597eedc51b1678f7d197f047a57e/ESPCN_x4.pb');
+      state.sr.setModel('espcn', 4);
+
+      utils.updateProgress(100, '✅ تم تحميل نموذج ESPCN');
+      el.aiStatus.textContent = '✅ تم تحميل نموذج ESPCN للتحسين 4K';
+      console.log('✅ ESPCN model loaded successfully');
+      return true;
+    } catch (error) {
+      console.error('فشل تحميل نموذج ESPCN:', error);
+      el.aiStatus.textContent = '⚠️ فشل تحميل ESPCN - استخدام الطرق البديلة';
+      utils.showToast('فشل تحميل نموذج ESPCN، استخدام الطرق التقليدية', 'warning');
+      return false;
+    }
+  },
+
+  // ✅ استخدام النموذج لرفع الجودة إلى 4K
+  upscaleTo4K: async (canvas) => {
+    if (!state.sr) return canvas;
+
+    try {
+      const src = cv.imread(canvas);
+      const dst = new cv.Mat();
+      state.sr.upsample(src, dst);
+
+      const output = document.createElement('canvas');
+      output.width = dst.cols;
+      output.height = dst.rows;
+      cv.imshow(output, dst);
+
+      src.delete();
+      dst.delete();
+
+      return output;
+    } catch (error) {
+      console.error('خطأ أثناء التحسين 4K عبر ESPCN:', error);
+      return canvas;
+    }
+  }
+};
+
 
       // ==================== OpenCV Integration ====================
       const opencvProcessor = {
@@ -1685,4 +1683,5 @@ state.sr.setModel('espcn', 4);
   </script>
 </body>
 </html>
+
 
