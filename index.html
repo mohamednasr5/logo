@@ -854,8 +854,8 @@
         <div class="control-item">
           <label>🎨 جودة الإخراج:</label>
           <select id="outputQuality">
-            <option value="1.0">أقصى جودة (100%)</option>
-            <option value="0.95" selected>جودة عالية جداً (95%)</option>
+            <option value="1.0" selected>أقصى جودة (100%)</option>
+            <option value="0.95">جودة عالية جداً (95%)</option>
             <option value="0.85">جودة عالية (85%)</option>
             <option value="0.75">جودة متوسطة - حجم أصغر (75%)</option>
           </select>
@@ -864,8 +864,8 @@
         <div class="control-item">
           <label>📁 صيغة الإخراج:</label>
           <select id="outputFormat">
-            <option value="jpeg" selected>JPEG (حجم أصغر)</option>
-            <option value="png">PNG (جودة أعلى)</option>
+            <option value="jpeg">JPEG (حجم أصغر)</option>
+            <option value="png" selected>PNG (جودة أعلى)</option>
             <option value="webp">WebP (توازن مثالي)</option>
           </select>
         </div>
@@ -879,7 +879,7 @@
         <div class="control-item">
           <label>اتجاه القص العمودي:</label>
           <select id="vertSide">
-            <option value="right">يمين ←</option>
+            <option value="right" selected>يمين ←</option>
             <option value="left">يسار →</option>
           </select>
         </div>
@@ -887,8 +887,8 @@
         <div class="control-item">
           <label>عرض القص العمودي:</label>
           <div class="range-control">
-            <input id="vertCut" type="range" min="0" max="30" step="0.5" value="2">
-            <span class="range-value"><span id="vertVal">2</span>%</span>
+            <input id="vertCut" type="range" min="0" max="30" step="0.5" value="9">
+            <span class="range-value"><span id="vertVal">9</span>%</span>
           </div>
         </div>
         
@@ -1910,6 +1910,7 @@
   src="https://connect.facebook.net/ar_AR/sdk.js#xfbml=1&version=v20.0"></script>
 </body>
 </html>
+
 
 
 
