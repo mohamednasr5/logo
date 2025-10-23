@@ -1874,6 +1874,31 @@
             }
             
             utils.showToast('تم تنزيل جميع الصور باسم mohamedhammad! 🎉', 'success');
+            
+            // ========== إضافة كود التفريغ هنا ==========
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // مسح جميع البيانات
+            state.items = [];
+            state.processedCount = 0;
+            state.totalSize = 0;
+            el.gallery.innerHTML = '';
+            el.gallery.classList.add('empty');
+            el.fileCount.style.display = 'none';
+            el.fileCountNum.textContent = '0';
+            
+            // إعادة تعيين الإحصائيات
+            el.statImages.textContent = '0';
+            el.statProcessed.textContent = '0';
+            el.statTime.textContent = '0s';
+            el.statSize.textContent = '0 MB';
+            
+            // إعادة تعيين شريط التقدم والحالة
+            utils.updateProgress(0, 'جاهز للاستخدام');
+            el.aiStatus.textContent = '🤖 في انتظار تحميل الصور...';
+            el.picker.value = '';
+            
+            utils.showToast('تم تفريغ المعرض وجاهز لصور جديدة', 'success');
           });
           
           el.btnClear.addEventListener('click', () => {
@@ -1910,8 +1935,3 @@
   src="https://connect.facebook.net/ar_AR/sdk.js#xfbml=1&version=v20.0"></script>
 </body>
 </html>
-
-
-
-
-
