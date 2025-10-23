@@ -4,15 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>🛠️ إزالة الشعار المتقدمة بالذكاء الاصطناعي | مهندس محمد حماد</title>
-  <!-- زر متابعة فيسبوك -->
-<div style="margin-top:10px; text-align:center;">
-  <div class="fb-follow"
-      data-href="https://www.facebook.com/en.mohamed.nasr"
-      data-layout="button"
-      data-size="large"
-      data-show-faces="false">
-  </div>
-</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/js/ion.sound.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
   <script src="https://docs.opencv.org/4.8.0/opencv.js"></script>
   <style>
@@ -37,12 +29,18 @@
       text-align: center; 
       border-bottom: 1px solid var(--border);
       background: linear-gradient(135deg, #0f1115 0%, #1a1f2e 100%);
+      animation: headerGlow 3s ease-in-out infinite;
+    }
+    @keyframes headerGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(0, 224, 164, 0.1); }
+      50% { box-shadow: 0 0 20px rgba(0, 224, 164, 0.3); }
     }
     h1 { 
       margin: 0 0 8px; 
       color: var(--brand); 
       font-weight: 700; 
       font-size: clamp(18px, 4vw, 24px);
+      text-shadow: 0 0 20px rgba(0, 224, 164, 0.5);
     }
     .subtitle {
       color: #9fb0c3;
@@ -61,14 +59,19 @@
       padding: 20px; 
       margin-bottom: 16px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      animation: cardFadeIn 0.6s ease-out;
+    }
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .card h3 {
       color: var(--brand);
       margin-bottom: 12px;
       font-size: 18px;
+      text-shadow: 0 0 10px rgba(0, 224, 164, 0.3);
     }
     
-    /* Drop Zone */
     #dropZone {
       border: 3px dashed var(--brand);
       border-radius: 16px;
@@ -97,6 +100,12 @@
       border-style: solid;
       transform: scale(1.02);
       box-shadow: 0 0 30px rgba(0, 224, 164, 0.3);
+      animation: dragPulse 0.5s ease-out;
+    }
+    @keyframes dragPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1.02); }
     }
     #dropZone.dragover::after {
       opacity: 1;
@@ -113,6 +122,7 @@
     }
     #dropZone.dragover .drop-icon {
       animation: bounce 0.5s ease infinite;
+      font-size: 80px;
     }
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -123,6 +133,7 @@
       font-weight: 700;
       color: var(--brand);
       margin-bottom: 12px;
+      text-shadow: 0 0 10px rgba(0, 224, 164, 0.3);
     }
     .drop-hint {
       font-size: 14px;
@@ -143,10 +154,15 @@
       font-weight: 700;
       font-size: 13px;
       margin-top: 12px;
+      animation: countPulse 0.6s ease-out;
+    }
+    @keyframes countPulse {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
     }
     #picker { display: none; }
     
-    /* Controls */
     .control-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -168,10 +184,14 @@
       border-radius: 10px;
       padding: 10px;
       font-size: 14px;
-      transition: border-color 0.3s ease;
+      transition: all 0.3s ease;
     }
     select:focus, input[type="number"]:focus {
       outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 15px rgba(0, 224, 164, 0.3);
+    }
+    select:hover, input[type="number"]:hover {
       border-color: var(--brand);
     }
     
@@ -187,6 +207,7 @@
       border-radius: 10px;
       outline: none;
       -webkit-appearance: none;
+      transition: all 0.3s ease;
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
@@ -196,9 +217,11 @@
       border-radius: 50%;
       cursor: pointer;
       transition: transform 0.2s ease;
+      box-shadow: 0 0 10px rgba(0, 224, 164, 0.5);
     }
     input[type="range"]::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
+      transform: scale(1.3);
+      box-shadow: 0 0 20px rgba(0, 224, 164, 0.8);
     }
     input[type="range"]::-moz-range-thumb {
       width: 18px;
@@ -207,6 +230,7 @@
       border-radius: 50%;
       cursor: pointer;
       border: none;
+      box-shadow: 0 0 10px rgba(0, 224, 164, 0.5);
     }
     .range-value {
       min-width: 50px;
@@ -215,7 +239,6 @@
       color: var(--brand);
     }
     
-    /* Buttons */
     .btn-group {
       display: flex;
       gap: 12px;
@@ -236,6 +259,7 @@
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 224, 164, 0.2);
     }
     .btn::before {
       content: '';
@@ -254,11 +278,11 @@
       height: 300px;
     }
     .btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 224, 164, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 224, 164, 0.5);
     }
     .btn:active:not(:disabled) {
-      transform: translateY(0);
+      transform: translateY(-1px);
     }
     .btn:disabled {
       opacity: 0.5;
@@ -267,13 +291,20 @@
     .btn-secondary {
       background: #2a2f3a;
       color: var(--text);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
     }
     .btn-danger {
       background: var(--error);
       color: white;
+      box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+    }
+    .btn-danger:hover:not(:disabled) {
+      box-shadow: 0 8px 25px rgba(255, 71, 87, 0.5);
     }
     
-    /* Progress */
     .progress-container {
       margin: 16px 0;
       position: relative;
@@ -286,6 +317,7 @@
       border: 1px solid var(--border);
       overflow: hidden;
       position: relative;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
     }
     .progress-bar {
       height: 100%;
@@ -295,6 +327,7 @@
       animation: progressAnim 2s linear infinite;
       transition: width 0.3s ease;
       width: 0%;
+      box-shadow: 0 0 15px rgba(0, 224, 164, 0.6);
     }
     @keyframes progressAnim {
       0% { background-position: 0% 0; }
@@ -318,13 +351,13 @@
       to { transform: rotate(360deg); }
     }
     
-    /* AI Status */
     #aiStatus {
       text-align: center;
       margin: 16px 0;
       padding: 12px;
       background: rgba(0, 224, 164, 0.1);
       border-radius: 10px;
+      border: 2px solid rgba(0, 224, 164, 0.3);
       font-weight: 600;
       font-size: 14px;
       color: var(--brand);
@@ -332,9 +365,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      text-shadow: 0 0 10px rgba(0, 224, 164, 0.3);
+      animation: statusPulse 2s ease-in-out infinite;
+    }
+    @keyframes statusPulse {
+      0%, 100% { border-color: rgba(0, 224, 164, 0.3); }
+      50% { border-color: rgba(0, 224, 164, 0.8); }
     }
     
-    /* Gallery */
     .gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -362,8 +400,9 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .thumb-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0, 224, 164, 0.2);
+      transform: translateY(-6px);
+      box-shadow: 0 12px 30px rgba(0, 224, 164, 0.3);
+      border-color: var(--brand);
     }
     .thumb-header {
       padding: 10px;
@@ -398,7 +437,7 @@
       position: absolute;
       top: 10px;
       right: 10px;
-      background: rgba(0, 224, 164, 0.9);
+      background: rgba(0, 224, 164, 0.95);
       color: #02130e;
       border: none;
       border-radius: 8px;
@@ -407,13 +446,17 @@
       font-weight: 700;
       cursor: pointer;
       z-index: 10;
-      transition: transform 0.2s ease;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0, 224, 164, 0.4);
     }
     .comparison-toggle:hover {
-      transform: scale(1.05);
+      transform: scale(1.1);
+      box-shadow: 0 6px 15px rgba(0, 224, 164, 0.6);
+    }
+    .comparison-toggle:active {
+      transform: scale(0.95);
     }
     
-    /* Thumb Controls */
     .thumb-controls {
       padding: 12px;
       background: #0d1118;
@@ -443,7 +486,6 @@
       flex: 1;
     }
     
-    /* Thumb Stats */
     .thumb-stats {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -462,13 +504,13 @@
       font-weight: 700;
       color: var(--brand);
       margin-bottom: 2px;
+      text-shadow: 0 0 5px rgba(0, 224, 164, 0.3);
     }
     .thumb-stat-label {
       font-size: 10px;
       color: #7a8a9a;
     }
     
-    /* Stats */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -481,23 +523,25 @@
       border-radius: 12px;
       padding: 16px;
       text-align: center;
-      transition: transform 0.3s ease;
+      transition: all 0.3s ease;
     }
     .stat-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 224, 164, 0.2);
+      border-color: var(--brand);
     }
     .stat-value {
       font-size: 24px;
       font-weight: 700;
       color: var(--brand);
       margin-bottom: 4px;
+      text-shadow: 0 0 10px rgba(0, 224, 164, 0.3);
     }
     .stat-label {
       font-size: 12px;
       color: #7a8a9a;
     }
     
-    /* Toast Notifications */
     .toast {
       position: fixed;
       bottom: 20px;
@@ -506,11 +550,16 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 16px 20px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3), 0 0 20px rgba(0, 224, 164, 0.2);
       z-index: 10000;
       transform: translateX(400px);
-      transition: transform 0.3s ease;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       max-width: 300px;
+      animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
     .toast.show {
       transform: translateX(0);
@@ -519,15 +568,18 @@
     .toast.error { border-left: 4px solid var(--error); }
     .toast.warning { border-left: 4px solid #ffa502; }
     
-    /* User Counter */
     #activeUsers {
       margin-top: 12px;
       font-size: 16px;
       color: var(--brand);
       font-weight: 700;
+      animation: userPulse 2s ease-in-out infinite;
+    }
+    @keyframes userPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
     }
     
-    /* Privacy Note */
     .privacy-note {
       margin-top: 12px;
       padding: 12px;
@@ -537,9 +589,9 @@
       font-size: 13px;
       font-weight: 600;
       text-align: center;
+      border: 1px solid rgba(0, 224, 164, 0.3);
     }
     
-    /* Footer */
     footer {
       text-align: center;
       padding: 24px;
@@ -552,13 +604,13 @@
       color: var(--brand);
       text-decoration: none;
       font-weight: 700;
-      transition: color 0.3s ease;
+      transition: all 0.3s ease;
     }
     footer a:hover {
       color: #00b8ff;
+      text-shadow: 0 0 10px rgba(0, 184, 255, 0.5);
     }
     
-    /* Theme Toggle */
     #themeToggle {
       position: fixed;
       top: 20px;
@@ -573,13 +625,16 @@
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
-      transition: transform 0.3s ease;
+      transition: all 0.3s ease;
     }
     #themeToggle:hover {
-      transform: scale(1.1) rotate(20deg);
+      transform: scale(1.15) rotate(20deg);
+      box-shadow: 0 6px 20px rgba(0, 224, 164, 0.4);
+    }
+    #themeToggle:active {
+      transform: scale(0.95);
     }
     
-    /* Sound Toggle */
     #soundToggle {
       position: fixed;
       bottom: 20px;
@@ -594,13 +649,16 @@
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
-      transition: transform 0.3s ease;
+      transition: all 0.3s ease;
     }
     #soundToggle:hover {
-      transform: scale(1.1);
+      transform: scale(1.15);
+      box-shadow: 0 6px 20px rgba(0, 224, 164, 0.4);
+    }
+    #soundToggle:active {
+      transform: scale(0.95);
     }
     
-    /* Light Theme */
     body.light-theme {
       --bg: #f5f5f5;
       --panel: #ffffff;
@@ -608,7 +666,21 @@
       --border: #e0e0e0;
     }
     
-    /* Responsive */
+    .live-preview-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+      box-shadow: 0 0 10px var(--success);
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--success); }
+      50% { opacity: 0.5; box-shadow: 0 0 5px var(--success); }
+    }
+
     @media (max-width: 768px) {
       .control-grid {
         grid-template-columns: 1fr;
@@ -650,168 +722,15 @@
         grid-template-columns: repeat(2, 1fr);
       }
     }
-
-    /* Live Preview Indicator */
-    .live-preview-indicator {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background: var(--success);
-      border-radius: 50%;
-      margin-right: 8px;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
-    }
-
-    /* Oath Modal */
-    .oath-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10001;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-    .oath-modal.show {
-      opacity: 1;
-      visibility: visible;
-    }
-    .oath-content {
-      background: var(--panel);
-      border-radius: 16px;
-      padding: 32px;
-      max-width: 600px;
-      width: 90%;
-      text-align: center;
-      position: relative;
-      box-shadow: 0 8px 32px rgba(0, 224, 164, 0.3);
-      transform: translate(0, 0);
-      animation: floatOath 4s ease-in-out infinite;
-    }
-    @keyframes floatOath {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-    .oath-content::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 224, 164, 0.2) 0%, transparent 70%);
-      z-index: -1;
-      transition: background 0.3s ease;
-    }
-    .oath-text {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 24px;
-      line-height: 1.8;
-    }
-    .oath-checkbox {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-    .oath-checkbox input {
-      width: 20px;
-      height: 20px;
-      accent-color: var(--brand);
-    }
-    .oath-checkbox label {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .oath-btn-group {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-    }
-    .oath-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: 700;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: all 0.3s ease;
-    }
-    .oath-btn-follow {
-      background: #1877f2;
-      color: white;
-    }
-    .oath-btn-follow:hover {
-      background: #166fe5;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(24, 119, 242, 0.4);
-    }
-    .oath-btn-agree {
-      background: var(--brand);
-      color: #02130e;
-    }
-    .oath-btn-agree:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .oath-btn-agree:not(:disabled):hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 224, 164, 0.4);
-    }
   </style>
 </head>
 <body>
   <button id="themeToggle" title="تبديل الوضع">🌙</button>
   <button id="soundToggle" title="تشغيل/إيقاف الصوت">🔊</button>
 
-  <!-- Oath Modal -->
-  <div id="oathModal" class="oath-modal">
-    <div class="oath-content">
-      <div class="oath-text">
-        أقسم بالله العظيم أنني أتابع المهندس محمد حماد على صفحته على فيسبوك وإلا ألغى متابعته بعد استخدامي لهذه الأداة، وإن لم أتابعه أكون ظالمًا له وظالمًا لنفسي وسأتحمل الحساب يوم الدين.
-      </div>
-      <div class="oath-checkbox">
-        <input type="checkbox" id="oathCheck">
-        <label for="oathCheck">أقسم على ذلك</label>
-      </div>
-      <div class="oath-btn-group">
-        <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank" class="oath-btn oath-btn-follow">
-          <span>📘</span> الدخول لحساب المهندس لمتابعته أولاً
-        </a>
-        <button id="oathAgree" class="oath-btn oath-btn-agree" disabled>موافق</button>
-      </div>
-    </div>
-  </div>
-<!-- زر المتابعة داخل القسم -->
-<div style="margin-top:15px;">
-  <div class="fb-follow"
-      data-href="https://www.facebook.com/en.mohamed.nasr"
-      data-layout="button"
-      data-size="large"
-      data-show-faces="false">
-  </div>
-</div>
-
   <header>
     <h1>🛠️ إزالة الشعار المتقدمة بالذكاء الإصطناعي | من مهندس محمد حماد</h1>
-    <div class="subtitle">لو حضرتك استفدت بأي شكل من الأشكال من هذه الأداة إدعي لي ربما دعوتك مستجابة </div>
+    <div class="subtitle">لو حضرتك استفدت بأي شكل من الأشكال من هذه الأداة إدعي لي ربما دعوتك مستجابة</div>
     <div id="activeUsers">المستخدمون النشطون: <span id="userCount">...</span></div>
   </header>
 
@@ -967,16 +886,12 @@
   <footer>
     <p>برمجة وتصميم <strong>المهندس محمد حماد</strong></p>
     <p>تابعني على: 👉 <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">facebook.com/en.mohamed.nasr</a></p>
-   <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">
- جميع الحقوق محفوظة © <span id="year"></span>
-</p>
-<script>
-  document.getElementById("year").textContent = new Date().getFullYear();
-</script>
-
+    <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">
+      جميع الحقوق محفوظة © <span id="year"></span>
+    </p>
   </footer>
 
-  <audio id="bgMusic" loop>
+  <audio id="bgMusic" loop volume="0.3">
     <source src="https://mohamednasr5.github.io/logo/bg.mp3" type="audio/mpeg">
   </audio>
 
@@ -984,17 +899,98 @@
     (async () => {
       'use strict';
 
+      // ==================== Sound Manager ====================
+      const soundManager = {
+        enabled: true,
+        context: null,
+        
+        init: () => {
+          try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            soundManager.context = audioContext;
+          } catch (e) {
+            console.log('Audio context not available');
+          }
+        },
+
+        playSound: (type) => {
+          if (!soundManager.enabled || !soundManager.context) return;
+
+          const ctx = soundManager.context;
+          const now = ctx.currentTime;
+          
+          try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            switch(type) {
+              case 'click':
+                osc.frequency.value = 800;
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+                break;
+
+              case 'success':
+                osc.frequency.setValueAtTime(523, now);
+                osc.frequency.setTargetAtTime(784, now, 0.02);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+                break;
+
+              case 'error':
+                osc.frequency.setValueAtTime(300, now);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+                break;
+
+              case 'process':
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.setTargetAtTime(600, now + 0.05, 0.02);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+                break;
+
+              case 'warning':
+                osc.frequency.setValueAtTime(600, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+                break;
+
+              case 'drag':
+                osc.frequency.setValueAtTime(650, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+                break;
+            }
+          } catch (e) {
+            console.log('Sound playback error:', e);
+          }
+        }
+      };
+
       // ==================== Constants ====================
       const MAX_FILES = 50;
-      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+      const MAX_FILE_SIZE = 10 * 1024 * 1024;
       const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
       const MIME_MAP = {
         'jpeg': 'image/jpeg',
         'png': 'image/png',
         'webp': 'image/webp'
       };
-      const OATH_COOKIE_NAME = 'oath_accepted';
-      const OATH_COOKIE_DURATION = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
       
       // ==================== State Management ====================
       const state = {
@@ -1003,12 +999,7 @@
         processedCount: 0,
         totalSize: 0,
         startTime: null,
-        aiModel: null,
         isMuted: false,
-        history: [],
-        activeUsers: 0,
-        opencvLoaded: false,
-        espcnModel: null,
         livePreviewEnabled: true,
         previewTimeout: null
       };
@@ -1028,11 +1019,7 @@
         themeToggle: document.getElementById('themeToggle'),
         fileCount: document.getElementById('fileCount'),
         fileCountNum: document.getElementById('fileCountNum'),
-        oathModal: document.getElementById('oathModal'),
-        oathCheck: document.getElementById('oathCheck'),
-        oathAgree: document.getElementById('oathAgree'),
         
-        // Controls
         removalMethod: document.getElementById('removalMethod'),
         enhanceMode: document.getElementById('enhanceMode'),
         outputQuality: document.getElementById('outputQuality'),
@@ -1045,13 +1032,11 @@
         topVal: document.getElementById('topVal'),
         bottomVal: document.getElementById('bottomVal'),
         
-        // Buttons
         btnProcess: document.getElementById('btnProcess'),
         btnDownload: document.getElementById('btnDownload'),
         btnUndo: document.getElementById('btnUndo'),
         btnClear: document.getElementById('btnClear'),
         
-        // Stats
         statImages: document.getElementById('statImages'),
         statProcessed: document.getElementById('statProcessed'),
         statTime: document.getElementById('statTime'),
@@ -1078,6 +1063,8 @@
         },
         
         showToast: (message, type = 'success') => {
+          soundManager.playSound(type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'success');
+          
           const toast = document.createElement('div');
           toast.className = `toast ${type}`;
           toast.textContent = message;
@@ -1094,7 +1081,7 @@
             throw new Error(`نوع الملف ${file.name} غير مدعوم`);
           }
           if (file.size > MAX_FILE_SIZE) {
-            throw new Error(`حجم الملف ${file.name} كبير جداً (أكثر من ${utils.formatBytes(MAX_FILE_SIZE)})`);
+            throw new Error(`حجم الملف ${file.name} كبير جداً`);
           }
           return true;
         },
@@ -1120,228 +1107,6 @@
           if (text) {
             el.statusText.textContent = text;
           }
-        },
-
-        getCookie: (name) => {
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) return parts.pop().split(';').shift();
-          return null;
-        },
-
-        setCookie: (name, value, duration) => {
-          const expires = new Date(Date.now() + duration).toUTCString();
-          document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Strict`;
-        }
-      };
-
-      // ==================== Oath Modal Management ====================
-      const oathModal = {
-        init: () => {
-          // Check if oath cookie exists
-          if (!utils.getCookie(OATH_COOKIE_NAME)) {
-            el.oathModal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-          } else {
-            el.oathModal.style.display = 'none';
-          }
-
-          // Enable/disable agree button based on checkbox
-          el.oathCheck.addEventListener('change', () => {
-            el.oathAgree.disabled = !el.oathCheck.checked;
-          });
-
-          // Handle agree button click
-          el.oathAgree.addEventListener('click', () => {
-            if (el.oathCheck.checked) {
-              utils.setCookie(OATH_COOKIE_NAME, 'accepted', OATH_COOKIE_DURATION);
-              el.oathModal.classList.remove('show');
-              document.body.style.overflow = '';
-              utils.showToast('تم قبول القسم، يمكنك الآن استخدام الأداة', 'success');
-            }
-          });
-
-          // Mouse move animation for oath modal
-          el.oathModal.addEventListener('mousemove', (e) => {
-            const rect = el.oathModal.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            const y = ((e.clientY - rect.top) / rect.height) * 100;
-            el.oathModal.querySelector('.oath-content').style.setProperty('--mouse-x', `${x}%`);
-            el.oathModal.querySelector('.oath-content').style.setProperty('--mouse-y', `${y}%`);
-          });
-        }
-      };
-
-      // ==================== ESPCN Model Integration ====================
-      const espcnProcessor = {
-        init: async () => {
-          try {
-            utils.updateProgress(10, '🔄 جارٍ تحميل نموذج ESPCN...');
-            el.aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ تحميل نموذج ESPCN للتحسين 4K...';
-            
-            try {
-              state.espcnModel = await tf.loadGraphModel('https://mohamednasr5.github.io/logo/ESPCN_x4/model.json');
-              utils.updateProgress(100, '✅ تم تحميل نموذج ESPCN');
-              el.aiStatus.textContent = '✅ تم تحميل نموذج ESPCN للتحسين 4K';
-              console.log('✅ ESPCN model loaded successfully');
-              return true;
-            } catch (modelError) {
-              console.log('ESPCN model not available, using advanced OpenCV methods');
-              return false;
-            }
-            
-          } catch (error) {
-            console.error('فشل تحميل نموذج ESPCN:', error);
-            el.aiStatus.textContent = '⚠️ فشل تحميل ESPCN - استخدام الطرق البديلة';
-            utils.showToast('فشل تحميل نموذج ESPCN، استخدام الطرق التقليدية', 'warning');
-            return false;
-          }
-        },
-
-        upscaleTo4K: async (canvas) => {
-          if (!state.espcnModel) {
-            return await opencvProcessor.enhanceImage(canvas, '4k-upscale');
-          }
-
-          try {
-            const tensor = tf.browser.fromPixels(canvas)
-              .resizeNearestNeighbor([canvas.height, canvas.width])
-              .toFloat()
-              .div(255.0)
-              .expandDims(0);
-
-            const prediction = state.espcnModel.predict(tensor);
-            
-            const upscaled = await tf.browser.toPixels(
-              prediction.squeeze().mul(255).cast('int32')
-            );
-            
-            const output = document.createElement('canvas');
-            output.width = canvas.width * 4;
-            output.height = canvas.height * 4;
-            const ctx = output.getContext('2d');
-            const imageData = new ImageData(upscaled, output.width, output.height);
-            ctx.putImageData(imageData, 0, 0);
-            
-            tensor.dispose();
-            prediction.dispose();
-            
-            return output;
-          } catch (error) {
-            console.error('ESPCN upscaling error:', error);
-            return await opencvProcessor.enhanceImage(canvas, '4k-upscale');
-          }
-        }
-      };
-
-      // ==================== OpenCV Integration ====================
-      const opencvProcessor = {
-        init: () => {
-          return new Promise((resolve, reject) => {
-            if (cv.getBuildInformation) {
-              state.opencvLoaded = true;
-              console.log('✅ OpenCV.js loaded successfully');
-              resolve();
-              return;
-            }
-            
-            const checkOpenCV = setInterval(() => {
-              if (cv.getBuildInformation) {
-                clearInterval(checkOpenCV);
-                state.opencvLoaded = true;
-                console.log('✅ OpenCV.js loaded successfully');
-                resolve();
-              }
-            }, 100);
-            
-            setTimeout(() => {
-              clearInterval(checkOpenCV);
-              reject(new Error('فشل تحميل OpenCV.js'));
-            }, 10000);
-          });
-        },
-
-        enhanceImage: (canvas, mode) => {
-          return new Promise((resolve) => {
-            if (!state.opencvLoaded) {
-              resolve(canvas);
-              return;
-            }
-
-            try {
-              const src = cv.imread(canvas);
-              const dst = new cv.Mat();
-              
-              switch(mode) {
-                case '4k-upscale':
-                  const targetWidth = Math.min(3840, canvas.width * 4);
-                  const targetHeight = Math.min(2160, canvas.height * 4);
-                  cv.resize(src, dst, new cv.Size(targetWidth, targetHeight), 0, 0, cv.INTER_LANCZOS4);
-                  const sharpened = new cv.Mat();
-                  const kernel = new cv.Mat(3, 3, cv.CV_32FC1);
-                  kernel.data32F.set([0, -0.5, 0, -0.5, 3, -0.5, 0, -0.5, 0]);
-                  cv.filter2D(dst, sharpened, -1, kernel);
-                  const final = new cv.Mat();
-                  cv.bilateralFilter(sharpened, final, 9, 75, 75);
-                  const output = document.createElement('canvas');
-                  output.width = targetWidth;
-                  output.height = targetHeight;
-                  cv.imshow(output, final);
-                  sharpened.delete();
-                  final.delete();
-                  kernel.delete();
-                  src.delete();
-                  dst.delete();
-                  resolve(output);
-                  break;
-                  
-                case 'ai-upscale':
-                  cv.resize(src, dst, new cv.Size(canvas.width * 2, canvas.height * 2), 0, 0, cv.INTER_CUBIC);
-                  cv.resize(dst, dst, new cv.Size(canvas.width, canvas.height), 0, 0, cv.INTER_AREA);
-                  const output2 = document.createElement('canvas');
-                  output2.width = canvas.width;
-                  output2.height = canvas.height;
-                  cv.imshow(output2, dst);
-                  src.delete();
-                  dst.delete();
-                  resolve(output2);
-                  break;
-                  
-                case 'denoise':
-                  cv.fastNlMeansDenoisingColored(src, dst, 10, 10, 7, 21);
-                  const output3 = document.createElement('canvas');
-                  output3.width = canvas.width;
-                  output3.height = canvas.height;
-                  cv.imshow(output3, dst);
-                  src.delete();
-                  dst.delete();
-                  resolve(output3);
-                  break;
-                  
-                case 'sharpen':
-                  const kernel2 = new cv.Mat(3, 3, cv.CV_32FC1);
-                  kernel2.data32F.set([0, -1, 0, -1, 5, -1, 0, -1, 0]);
-                  cv.filter2D(src, dst, -1, kernel2);
-                  const output4 = document.createElement('canvas');
-                  output4.width = canvas.width;
-                  output4.height = canvas.height;
-                  cv.imshow(output4, dst);
-                  src.delete();
-                  dst.delete();
-                  kernel2.delete();
-                  resolve(output4);
-                  break;
-                  
-                default:
-                  resolve(canvas);
-                  break;
-              }
-              
-            } catch (error) {
-              console.error('OpenCV enhancement error:', error);
-              resolve(canvas);
-            }
-          });
         }
       };
 
@@ -1403,6 +1168,7 @@
           if (!item || item.processing) return;
           
           item.processing = true;
+          soundManager.playSound('process');
           
           try {
             const opts = {
@@ -1412,22 +1178,12 @@
               side: el.vertSide.value
             };
             
-            const cropped = imageProcessing.cropImage(item.img, opts);
-            
-            const enhanceMode = el.enhanceMode.value;
-            
-            if (enhanceMode === '4k-upscale') {
-              item.processed = await espcnProcessor.upscaleTo4K(cropped);
-            } else if (state.opencvLoaded && enhanceMode !== 'none') {
-              item.processed = await opencvProcessor.enhanceImage(cropped, enhanceMode);
-            } else {
-              item.processed = cropped;
-            }
-            
+            item.processed = imageProcessing.cropImage(item.img, opts);
             imageProcessing.updateThumbPreview(idx);
             
           } catch (error) {
             console.error(`خطأ في معالجة الصورة ${idx + 1}:`, error);
+            soundManager.playSound('error');
             utils.showToast(`فشلت معالجة الصورة ${idx + 1}`, 'error');
           } finally {
             item.processing = false;
@@ -1457,10 +1213,12 @@
         
         processAll: async () => {
           if (state.items.length === 0) {
+            soundManager.playSound('warning');
             utils.showToast('لا توجد صور للمعالجة', 'warning');
             return;
           }
           
+          soundManager.playSound('process');
           el.aiStatus.innerHTML = '<span class="spin">🔄</span> جارٍ معالجة جميع الصور...';
           ui.disableActions(true);
           
@@ -1479,37 +1237,11 @@
             el.statTime.textContent = utils.formatTime(elapsed);
           }
           
+          soundManager.playSound('success');
           el.aiStatus.textContent = '✅ اكتملت معالجة جميع الصور';
           utils.updateProgress(100, '✅ تمت المعالجة بنجاح');
           ui.disableActions(false);
           utils.showToast('تمت معالجة جميع الصور بنجاح! 🎉', 'success');
-        }
-      };
-
-      // ==================== Live Preview Management ====================
-      const livePreview = {
-        init: () => {
-          const controls = [el.vertCut, el.topCut, el.bottomCut, el.vertSide];
-          
-          controls.forEach(control => {
-            control.addEventListener('input', () => {
-              if (state.livePreviewEnabled && state.items.length > 0) {
-                livePreview.updateAllPreviews();
-              }
-            });
-          });
-        },
-        
-        updateAllPreviews: () => {
-          if (state.previewTimeout) {
-            clearTimeout(state.previewTimeout);
-          }
-          
-          state.previewTimeout = setTimeout(() => {
-            state.items.forEach((_, idx) => {
-              imageProcessing.processPreview(idx);
-            });
-          }, 100);
         }
       };
 
@@ -1542,6 +1274,7 @@
           compareBtn.className = 'comparison-toggle';
           compareBtn.textContent = '👁️ قبل';
           compareBtn.addEventListener('click', () => {
+            soundManager.playSound('click');
             const item = state.items[idx];
             item.showOriginal = !item.showOriginal;
             compareBtn.textContent = item.showOriginal ? '👁️ بعد' : '👁️ قبل';
@@ -1556,11 +1289,11 @@
           stats.className = 'thumb-stats';
           stats.innerHTML = `
             <div class="thumb-stat">
-              <div class="thumb-stat-value" id="thumb-size-${idx}">${file.width || '?'}x${file.height || '?'}</div>
+              <div class="thumb-stat-value">${file.width || '?'}x${file.height || '?'}</div>
               <div class="thumb-stat-label">الأبعاد</div>
             </div>
             <div class="thumb-stat">
-              <div class="thumb-stat-value" id="thumb-quality-${idx}">4K</div>
+              <div class="thumb-stat-value">4K</div>
               <div class="thumb-stat-label">الجودة</div>
             </div>
           `;
@@ -1580,12 +1313,17 @@
           card.appendChild(controls);
           
           const processBtn = actions.querySelector('.process-btn');
-          processBtn.addEventListener('click', () => imageProcessing.processOne(idx));
+          processBtn.addEventListener('click', () => {
+            soundManager.playSound('click');
+            imageProcessing.processOne(idx);
+          });
           
           const saveBtn = actions.querySelector('.save-btn');
           saveBtn.addEventListener('click', () => {
+            soundManager.playSound('click');
             const item = state.items[idx];
             if (!item.processed) {
+              soundManager.playSound('warning');
               utils.showToast('يجب معالجة الصورة أولاً', 'warning');
               return;
             }
@@ -1600,6 +1338,7 @@
               link.href = URL.createObjectURL(blob);
               link.click();
               URL.revokeObjectURL(link.href);
+              soundManager.playSound('success');
               utils.showToast(`تم حفظ mohamedhammad (${idx + 1})`, 'success');
             }, mimeType, quality);
           });
@@ -1619,6 +1358,8 @@
       // ==================== File Handling ====================
       const fileHandler = {
         handleFiles: async (files) => {
+          soundManager.playSound('drag');
+          
           const validFiles = [];
           const errors = [];
           
@@ -1632,16 +1373,19 @@
           }
           
           if (errors.length > 0) {
+            soundManager.playSound('warning');
             utils.showToast(`تم تجاهل ${errors.length} ملف غير صالح`, 'warning');
           }
           
           if (validFiles.length === 0) {
+            soundManager.playSound('error');
             utils.showToast('لم يتم اختيار صور صالحة', 'error');
             return;
           }
           
           const filesToProcess = validFiles.slice(0, MAX_FILES);
           if (validFiles.length > MAX_FILES) {
+            soundManager.playSound('warning');
             utils.showToast(`تم تحميل أول ${MAX_FILES} صورة فقط`, 'warning');
           }
           
@@ -1675,6 +1419,7 @@
               
             } catch (error) {
               console.error('فشل تحميل الصورة:', error);
+              soundManager.playSound('error');
               utils.showToast(`فشل تحميل ${file.name}`, 'error');
             }
           }
@@ -1691,23 +1436,43 @@
           utils.updateProgress(100, `✅ تم تحميل ${state.items.length} صورة`);
           el.aiStatus.textContent = `✅ جاهز للمعالجة - ${state.items.length} صورة محملة`;
           
+          soundManager.playSound('success');
           utils.showToast(`تم تحميل ${state.items.length} صورة بنجاح! 🎉`, 'success');
+        }
+      };
+
+      // ==================== Live Preview Management ====================
+      const livePreview = {
+        init: () => {
+          const controls = [el.vertCut, el.topCut, el.bottomCut, el.vertSide];
+          
+          controls.forEach(control => {
+            control.addEventListener('input', () => {
+              if (state.livePreviewEnabled && state.items.length > 0) {
+                livePreview.updateAllPreviews();
+              }
+            });
+          });
+        },
+        
+        updateAllPreviews: () => {
+          if (state.previewTimeout) {
+            clearTimeout(state.previewTimeout);
+          }
+          
+          state.previewTimeout = setTimeout(() => {
+            state.items.forEach((_, idx) => {
+              imageProcessing.processPreview(idx);
+            });
+          }, 100);
         }
       };
 
       // ==================== Initialize App ====================
       const init = async () => {
-        console.log('🚀 تهيئة التطبيق...');
+        document.getElementById('year').textContent = new Date().getFullYear();
         
-        oathModal.init();
-        await espcnProcessor.init();
-        
-        try {
-          await opencvProcessor.init();
-        } catch (error) {
-          console.warn('OpenCV failed to load:', error);
-        }
-        
+        soundManager.init();
         dragDrop.init();
         audio.init();
         theme.init();
@@ -1718,8 +1483,6 @@
         
         el.aiStatus.textContent = '✅ جاهز للاستخدام - قم برفع الصور';
         utils.updateProgress(100, 'جاهز للاستخدام');
-        
-        console.log('✅ تم تهيئة التطبيق بنجاح');
       };
 
       // ==================== Drag & Drop ====================
@@ -1735,6 +1498,7 @@
           ['dragenter', 'dragover'].forEach(eventName => {
             el.dropZone.addEventListener(eventName, () => {
               el.dropZone.classList.add('dragover');
+              soundManager.playSound('drag');
             });
           });
           
@@ -1752,11 +1516,13 @@
             if (files.length > 0) {
               fileHandler.handleFiles(files);
             } else {
+              soundManager.playSound('warning');
               utils.showToast('لم يتم العثور على صور صالحة', 'warning');
             }
           });
           
           el.dropZone.addEventListener('click', () => {
+            soundManager.playSound('click');
             el.picker.click();
           });
           
@@ -1781,8 +1547,10 @@
           }, { once: true });
           
           el.soundToggle.addEventListener('click', () => {
+            soundManager.playSound('click');
             state.isMuted = !state.isMuted;
             el.bgMusic.muted = state.isMuted;
+            soundManager.enabled = !state.isMuted;
             el.soundToggle.textContent = state.isMuted ? '🔇' : '🔊';
             
             if (!state.isMuted) {
@@ -1798,6 +1566,7 @@
       const theme = {
         init: () => {
           el.themeToggle.addEventListener('click', () => {
+            soundManager.playSound('click');
             document.body.classList.toggle('light-theme');
             const isLight = document.body.classList.contains('light-theme');
             el.themeToggle.textContent = isLight ? '☀️' : '🌙';
@@ -1829,6 +1598,7 @@
           const syncRange = (range, display) => {
             range.addEventListener('input', () => {
               display.textContent = range.value;
+              soundManager.playSound('click');
             });
           };
           
@@ -1841,10 +1611,15 @@
       // ==================== Button Actions ====================
       const buttons = {
         init: () => {
-          el.btnProcess.addEventListener('click', imageProcessing.processAll);
+          el.btnProcess.addEventListener('click', () => {
+            soundManager.playSound('click');
+            imageProcessing.processAll();
+          });
           
           el.btnDownload.addEventListener('click', async () => {
+            soundManager.playSound('click');
             if (state.items.length === 0) {
+              soundManager.playSound('warning');
               utils.showToast('لا توجد صور للتنزيل', 'warning');
               return;
             }
@@ -1873,12 +1648,11 @@
               }
             }
             
+            soundManager.playSound('success');
             utils.showToast('تم تنزيل جميع الصور باسم mohamedhammad! 🎉', 'success');
             
-            // ========== إضافة كود التفريغ هنا ==========
             await new Promise(resolve => setTimeout(resolve, 500));
             
-            // مسح جميع البيانات
             state.items = [];
             state.processedCount = 0;
             state.totalSize = 0;
@@ -1887,24 +1661,25 @@
             el.fileCount.style.display = 'none';
             el.fileCountNum.textContent = '0';
             
-            // إعادة تعيين الإحصائيات
             el.statImages.textContent = '0';
             el.statProcessed.textContent = '0';
             el.statTime.textContent = '0s';
             el.statSize.textContent = '0 MB';
             
-            // إعادة تعيين شريط التقدم والحالة
             utils.updateProgress(0, 'جاهز للاستخدام');
             el.aiStatus.textContent = '🤖 في انتظار تحميل الصور...';
             el.picker.value = '';
             
+            soundManager.playSound('success');
             utils.showToast('تم تفريغ المعرض وجاهز لصور جديدة', 'success');
           });
           
           el.btnClear.addEventListener('click', () => {
+            soundManager.playSound('click');
             if (state.items.length === 0) return;
             
             if (confirm('هل تريد حذف جميع الصور؟')) {
+              soundManager.playSound('warning');
               state.items = [];
               state.processedCount = 0;
               state.totalSize = 0;
@@ -1919,6 +1694,8 @@
           });
           
           el.btnUndo.addEventListener('click', () => {
+            soundManager.playSound('click');
+            soundManager.playSound('warning');
             utils.showToast('ميزة التراجع قيد التطوير', 'warning');
           });
         }
@@ -1929,9 +1706,5 @@
       
     })();
   </script>
-  <!-- SDK الرسمي من فيسبوك -->
-<div id="fb-root"></div>
-<script async defer crossorigin="anonymous"
-  src="https://connect.facebook.net/ar_AR/sdk.js#xfbml=1&version=v20.0"></script>
 </body>
 </html>
