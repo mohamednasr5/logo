@@ -810,8 +810,8 @@
 </div>
 
   <header>
-    <h1>🛠️ إزالة الشعار المتقدمة بالذكاء الاصطناعي</h1>
-    <div class="subtitle">معالجة احترافية باستخدام TensorFlow.js + OpenCV.js | تحسين 4K تلقائي | من مهندس محمد حماد</div>
+    <h1>🛠️ إزالة الشعار المتقدمة بالذكاء الإصطناعي | من مهندس محمد حماد</h1>
+    <div class="subtitle">لو حضرتك استفدت بأي شكل من الأشكال من هذه الأداة إدعي لي ربما دعوتك مستجابة </div>
     <div id="activeUsers">المستخدمون النشطون: <span id="userCount">...</span></div>
   </header>
 
@@ -975,9 +975,13 @@
   <footer>
     <p>برمجة وتصميم <strong>المهندس محمد حماد</strong></p>
     <p>تابعني على: 👉 <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">facebook.com/en.mohamed.nasr</a></p>
-    <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">
-      النسخة 5.0 - مدعومة بـ TensorFlow.js + OpenCV.js + تحسين 4K تلقائي | جميع الحقوق محفوظة © 2025
-    </p>
+   <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">
+ جميع الحقوق محفوظة © <span id="year"></span>
+</p>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
   </footer>
 
   <audio id="bgMusic" loop>
@@ -1914,5 +1918,6 @@
   src="https://connect.facebook.net/ar_AR/sdk.js#xfbml=1&version=v20.0"></script>
 </body>
 </html>
+
 
 
